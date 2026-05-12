@@ -1,6 +1,6 @@
 {
   "name": "plataformadigitalapp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Aplicacion Plataforma Digital",
   "author": "Emir",
   "main": "main.js",
@@ -9,7 +9,10 @@
     "build:win": "electron-builder --win",
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux",
-    "build:all": "electron-builder -wml"
+    "build:all": "electron-builder -wml",
+    "release:win": "electron-builder --win --publish always",
+    "release:mac": "electron-builder --mac --publish always",
+    "release:linux": "electron-builder --linux --publish always"
   },
   "build": {
     "appId": "com.sea.pde",
@@ -40,6 +43,7 @@
   },
   "dependencies": {
     "dotenv": "^17.4.2",
+    "electron-log": "^5.4.3",
     "electron-updater": "^6.8.3"
   }
 }
