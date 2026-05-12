@@ -1,0 +1,45 @@
+{
+  "name": "plataformadigitalapp",
+  "version": "1.0.0",
+  "description": "Aplicacion Plataforma Digital",
+  "author": "Emir",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder -wml"
+  },
+  "build": {
+    "appId": "com.sea.pde",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "TU_USUARIO_GITHUB",
+        "repo": "TU_REPOSITORIO_GITHUB"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "ico.ico"
+    },
+    "mac": {
+      "target": "dmg"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
+  },
+  "devDependencies": {
+    "electron": "^37.2.0",
+    "electron-builder": "^26.8.1"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "electron-updater": "^6.8.3"
+  }
+}
