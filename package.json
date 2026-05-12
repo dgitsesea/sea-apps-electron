@@ -16,8 +16,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "TU_USUARIO_GITHUB",
-        "repo": "TU_REPOSITORIO_GITHUB"
+        "owner": "EmirSESEA",
+        "repo": "PlataformaDigitalApp"
       }
     ],
     "win": {
