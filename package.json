@@ -16,6 +16,8 @@
   },
   "build": {
     "appId": "com.sea.pde",
+    "productName": "Plataforma Digital",
+    "copyright": "Copyright © 2025 SEA Guanajuato",
     "publish": [
       {
         "provider": "github",
@@ -25,16 +27,25 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "ico.ico"
+      "icon": "ico.ico",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     },
     "mac": {
-      "target": "dmg"
+      "target": "dmg",
+      "category": "public.app-category.productivity"
     },
     "linux": {
       "target": [
         "AppImage",
         "deb"
-      ]
+      ],
+      "category": "Network"
     }
   },
   "devDependencies": {
