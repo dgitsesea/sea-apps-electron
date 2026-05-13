@@ -18,6 +18,8 @@
     "appId": "com.sea.pde",
     "productName": "Plataforma Digital",
     "copyright": "Copyright © 2025 SEA Guanajuato",
+    "compression": "maximum",
+    "asar": true,
     "publish": [
       {
         "provider": "github",
@@ -35,7 +37,9 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "compressor": "lzma",
+      "compressorDictSize": 64
     },
     "mac": {
       "target": "dmg",
