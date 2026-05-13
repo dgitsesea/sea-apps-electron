@@ -2,7 +2,7 @@
   "name": "plataformadigitalapp",
   "version": "1.0.2",
   "description": "Aplicacion Plataforma Digital",
-  "author": "Emir",
+  "author": "DGIT-SESEA",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
