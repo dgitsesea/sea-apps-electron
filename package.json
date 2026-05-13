@@ -1,6 +1,6 @@
 {
   "name": "plataformadigitalapp",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Aplicacion Plataforma Digital",
   "author": "DGIT-SESEA",
   "main": "main.js",
@@ -22,7 +22,8 @@
       {
         "provider": "github",
         "owner": "EmirSESEA",
-        "repo": "PlataformaDigitalApp"
+        "repo": "PlataformaDigitalApp",
+        "releaseType": "release"
       }
     ],
     "win": {
