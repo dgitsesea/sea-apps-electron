@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*' # Se ejecuta automáticamente cuando creas un tag como v1.0.2
 
+permissions:
+  contents: write  # Necesario para crear Releases y subir instaladores
+
 jobs:
   release:
     runs-on: ${{ matrix.os }}
