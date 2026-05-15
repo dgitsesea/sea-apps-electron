@@ -1,6 +1,6 @@
 {
-  "name": "plataformadigitalapp",
-  "version": "1.0.7",
+  "name": "sistema-aplicaciones-sesea",
+  "version": "1.0.1",
   "description": "Aplicacion Plataforma Digital",
   "author": "DGIT-SESEA",
   "main": "main.js",
@@ -16,7 +16,7 @@
   },
   "build": {
     "appId": "com.sea.pde",
-    "productName": "Plataforma Digital",
+    "productName": "Sistema de Aplicaciones SESEA",
     "copyright": "Copyright © 2025 SEA Guanajuato",
     "compression": "maximum",
     "asar": true,

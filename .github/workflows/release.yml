@@ -1,0 +1,39 @@
+name: Build and Release Electron App
+
+on:
+  push:
+    tags:
+      - 'v*' # Se ejecuta automáticamente cuando creas un tag como v1.0.2
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Construir y Publicar Instaladores
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            npm run release:win
+          elif [ "$RUNNER_OS" == "Linux" ]; then
+            npm run release:linux
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+            npm run release:mac
+          fi
+        shell: bash
