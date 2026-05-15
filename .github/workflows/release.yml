@@ -28,15 +28,20 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
-      - name: Construir y Publicar Instaladores
+      - name: Construir y Publicar (Windows)
+        if: runner.os == 'Windows'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            npm run release:win
-          elif [ "$RUNNER_OS" == "Linux" ]; then
-            npm run release:linux
-          elif [ "$RUNNER_OS" == "macOS" ]; then
-            npm run release:mac
-          fi
-        shell: bash
+        run: npm run release:win
+
+      - name: Construir y Publicar (Linux)
+        if: runner.os == 'Linux'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run release:linux
+
+      - name: Construir y Publicar (macOS)
+        if: runner.os == 'macOS'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run release:mac
