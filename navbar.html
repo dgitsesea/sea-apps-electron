@@ -61,6 +61,16 @@
         .reload-btn:hover {
             background-color: #444;
         }
+        .support-btn {
+            background-color: rgba(0, 120, 212, 0.15);
+            border: 1px solid rgba(0, 120, 212, 0.4);
+            color: #4fc3f7;
+        }
+        .support-btn:hover {
+            background-color: #0078d4;
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(0, 120, 212, 0.6);
+        }
     </style>
 </head>
 <body>
@@ -71,6 +81,7 @@
         <button onclick="navigate('https://publico.seseaguanajuato.org/', this)">Portal Público</button>
         <button onclick="navigate('https://plataformadigital.guanajuato.gob.mx/', this)" class="active">Plataforma Digital</button>
         <button onclick="navigate('https://intranet.seseaguanajuato.org/', this)">Intranet SESEA</button>
+        <button class="support-btn" onclick="openTiSupport()">📞 Soporte TI</button>
         
         <div class="spacer"></div>
         <button class="reload-btn" onclick="reloadView()">🔄 Recargar</button>
@@ -83,6 +94,9 @@
         }
         function reloadView() {
             window.api.reload();
+        }
+        function openTiSupport() {
+            window.api.openTiSupport();
         }
         
         // Cargar botón activo inicial

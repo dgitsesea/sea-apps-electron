@@ -50,6 +50,7 @@ const ALLOWED_ORIGINS = [
 
 let mainWindow;
 let mainView;
+let supportWindow = null;
 
 // ─────────────────────────────────────────────────────────────
 // Crear ventana principal
@@ -226,6 +227,56 @@ function createWindow() {
             // Ignorar
         }
         return process.env.PAGINA_ABRIR || 'https://plataformadigital.guanajuato.gob.mx/';
+    });
+
+    ipcMain.removeAllListeners('open-ti-support');
+    ipcMain.on('open-ti-support', () => {
+        if (supportWindow) {
+            supportWindow.focus();
+            return;
+        }
+
+        supportWindow = new BrowserWindow({
+            width: 650,
+            height: 580,
+            resizable: false,
+            frame: false,
+            transparent: true,
+            alwaysOnTop: true,
+            show: false,
+            parent: mainWindow,
+            modal: true,
+            webPreferences: {
+                nodeIntegration: false,
+                contextIsolation: true,
+                sandbox: true,
+                preload: path.join(__dirname, 'preload.js')
+            }
+        });
+
+        supportWindow.loadFile('soporte.html');
+
+        supportWindow.once('ready-to-show', () => {
+            supportWindow.show();
+        });
+
+        supportWindow.on('closed', () => {
+            supportWindow = null;
+        });
+    });
+
+    ipcMain.removeAllListeners('close-support');
+    ipcMain.on('close-support', () => {
+        if (supportWindow) {
+            supportWindow.close();
+        }
+    });
+
+    ipcMain.removeAllListeners('open-external');
+    ipcMain.on('open-external', (event, url) => {
+        if (url && (url.startsWith('mailto:') || url.startsWith('https://') || url.startsWith('http://'))) {
+            shell.openExternal(url);
+        }
     });
 
 }
