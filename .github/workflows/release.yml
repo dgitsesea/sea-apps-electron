@@ -25,7 +25,8 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libfuse2
+          sudo apt-get install -y libfuse2 ruby ruby-dev build-essential rpm dpkg
+          sudo gem install --no-document fpm
 
       - name: Instalar Node.js
         uses: actions/setup-node@v4
@@ -51,4 +52,5 @@ jobs:
         if: runner.os == 'Linux'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          USE_SYSTEM_FPM: "true"
         run: npm run release:linux
