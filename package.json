@@ -14,6 +14,7 @@
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux",
     "build:all": "electron-builder -wml",
+    "release": "electron-builder --publish always",
     "release:win": "electron-builder --win --publish always",
     "release:mac": "electron-builder --mac --publish always",
     "release:linux": "electron-builder --linux --publish always"
@@ -27,6 +28,8 @@
     "publish": [
       {
         "provider": "github",
+        "owner": "EmirSESEA",
+        "repo": "SuiteDeApps",
         "releaseType": "release"
       }
     ],
