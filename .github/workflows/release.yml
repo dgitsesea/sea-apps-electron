@@ -9,11 +9,12 @@ on:
   workflow_dispatch:
     inputs:
       os:
-        description: 'Run build on a specific runner'
+        description: 'Run build on a specific runner (or all)'
         required: true
-        default: 'macos-latest'
+        default: 'all'
         type: choice
         options:
+          - all
           - windows-latest
           - macos-latest
           - ubuntu-latest
@@ -33,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ${{ github.event_name == 'workflow_dispatch' && fromJson('["' + github.event.inputs.os + '"]') || fromJson('["windows-latest","macos-latest","ubuntu-latest"]') }}
+        os: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.os != 'all') && fromJson(format('["{0}"]', github.event.inputs.os)) || fromJson('["windows-latest","macos-latest","ubuntu-latest"]') }}
 
     steps:
       - name: Checkout del código
