@@ -28,8 +28,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "EmirSESEA",
-        "repo": "SuiteDeApps",
+        "owner": "dgitsesea",
+        "repo": "sea-apps-electron",
         "releaseType": "release"
       }
     ],
