@@ -1,6 +1,6 @@
 {
   "name": "sistema-de-aplicaciones-sesea",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Sistema de Aplicaciones SESEA",
   "author": "DGIT-SESEA",
   "main": "main.js",
@@ -15,7 +15,7 @@
     "release:linux": "electron-builder --linux --publish always"
   },
   "build": {
-    "appId": "com.sea.pde",
+    "appId": "com.sea.dgitsuite",
     "productName": "Sistema de Aplicaciones SESEA",
     "copyright": "Copyright © 2025 SEA Guanajuato",
     "compression": "maximum",
@@ -23,8 +23,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "EmirSESEA",
-        "repo": "SuiteDeApps",
+        "owner": "DGIT-SESEA",
+        "repo": "SuiteApps",
         "releaseType": "release"
       }
     ],
