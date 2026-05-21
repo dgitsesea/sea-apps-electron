@@ -41,7 +41,10 @@ const ALLOWED_ORIGINS = [
     'https://seseaguanajuato.org',
     'https://publico.seseaguanajuato.org',
     'https://plataformadigital.guanajuato.gob.mx',
-    'https://intranet.seseaguanajuato.org'
+    'https://intranet.seseaguanajuato.org',
+    'https://login.seseaguanajuato.org',
+    'https://devsireg.seseaguanajuato.org',
+    'https://sireg.seseaguanajuato.org'
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -191,11 +194,9 @@ function createWindow() {
 
     mainView.webContents.setWindowOpenHandler(({ url }) => {
         try {
-            const targetOrigin = new URL(url).origin;
-            if (ALLOWED_ORIGINS.includes(targetOrigin)) {
-                return { action: 'allow' };
-            }
-            shell.openExternal(url);
+            // Forzamos a que cualquier enlace (incluso los de target="_blank")
+            // se abra dentro de la misma vista de la aplicación.
+            mainView.webContents.loadURL(url);
             return { action: 'deny' };
         } catch {
             return { action: 'deny' };
