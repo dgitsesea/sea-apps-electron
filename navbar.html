@@ -15,15 +15,14 @@
         .nav-container,
         * {
             cursor:
-                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><circle cx="10" cy="10" r="8" fill="none" stroke="%234fc3f7" stroke-width="1.5" stroke-dasharray="3,1"/><circle cx="10" cy="10" r="5" fill="none" stroke="%230078d4" stroke-width="1.5"/><path d="M16 16 L22 22" stroke="%234fc3f7" stroke-width="3" stroke-linecap="round"/></svg>') 10 10,
-                pointer !important;
+                pointer;
         }
 
         body {
             margin: 0;
             padding: 0;
 
-            background-color: #1e1e1e;
+            background-color: #387c92;
 
             font-family:
                 'Segoe UI',
@@ -141,8 +140,7 @@
         }
 
         button:hover {
-            background-color: #2b2b2b;
-
+            background-color: #59c4e7;
             color: #ffffff;
 
             box-shadow:
@@ -167,11 +165,7 @@
         /* ================================= */
 
         button.active {
-            background: linear-gradient(135deg,
-                    #005a9e,
-                    #0078d4,
-                    #0096ff,
-                    #005a9e);
+            background: #17343d;
 
             background-size: 300% 300%;
 
@@ -186,32 +180,16 @@
             font-weight: 600;
         }
 
-        button.active::before {
-            content: '';
-
-            position: absolute;
-
-            bottom: 3px;
-
-            width: 4px;
-            height: 4px;
-
-            background-color: #ffffff;
-
-            border-radius: 50%;
-
-            animation:
-                pulseDot 2s infinite ease-in-out;
-        }
+       
 
         .spacer {
             flex-grow: 1;
         }
 
         .reload-btn {
-            background-color: #2d2d2d;
-
-            border: 1px solid #444;
+            background-color: #c3d8de;
+            box-shadow:
+                0 0 10px rgba(255, 255, 255, 0.1);
         }
 
         .reload-btn:hover {
@@ -223,16 +201,16 @@
 
         .support-btn {
             background-color:
-                rgba(0, 120, 212, 0.15);
+                #92387c;
 
             border:
                 1px solid rgba(0, 120, 212, 0.4);
 
-            color: #4fc3f7;
+            color: #ffffff;
         }
 
         .support-btn:hover {
-            background-color: #0078d4;
+            background-color: #7c9238;
 
             color: #ffffff;
 
@@ -307,16 +285,15 @@
             Intranet SESEA
         </button>
 
-        <button class="support-btn" onclick="openTiSupport()">
-
-            📞 Soporte TI
-        </button>
+        
 
         <div class="spacer"></div>
-
+        <button class="support-btn" onclick="openTiSupport()">
+            Soporte TI
+        </button>
         <button class="reload-btn" onclick="reloadView()">
 
-            🔄 Recargar
+            🔄
         </button>
 
     </div>

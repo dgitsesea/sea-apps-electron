@@ -1,6 +1,7 @@
 {
   "name": "sistema_de_aplicaciones_sesea",
-  "version": "4.1.0",
+  "version": "5.1.0",
+  "author": "SEA Guanajuato <soporte@seseaguanajuato.org>",
   "description": "Sistema de Aplicaciones SESEA",
   "repository": {
     "type": "git",
