@@ -7,6 +7,16 @@ on:
     tags:
       - 'v*' # Se ejecuta automáticamente cuando creas un tag como v1.0.2
   workflow_dispatch:
+    inputs:
+      os:
+        description: 'Run build on a specific runner'
+        required: true
+        default: 'macos-latest'
+        type: choice
+        options:
+          - windows-latest
+          - macos-latest
+          - ubuntu-latest
 
 permissions:
   contents: write  # Necesario para crear Releases y subir instaladores
@@ -23,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: ${{ github.event_name == 'workflow_dispatch' && fromJson('["' + github.event.inputs.os + '"]') || fromJson('["windows-latest","macos-latest","ubuntu-latest"]') }}
 
     steps:
       - name: Checkout del código

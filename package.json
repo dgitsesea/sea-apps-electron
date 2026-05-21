@@ -1,10 +1,10 @@
 {
-  "name": "Sistema-de-Aplicaciones-SESEA",
-  "version": "3.1.1",
+  "name": "sistema_de_aplicaciones_sesea",
+  "version": "4.0.2",
   "description": "Sistema de Aplicaciones SESEA",
   "repository": {
     "type": "git",
-    "url": "https://github.com/EmirSESEA/SuiteDeApps.git"
+    "url": "https://github.com/dgitsesea/sea-apps-electron.git"
   },
   "author": "DGIT-SESEA",
   "main": "main.js",
