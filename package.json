@@ -2,6 +2,10 @@
   "name": "sistema-de-aplicaciones-sesea",
   "version": "3.0.0",
   "description": "Sistema de Aplicaciones SESEA",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EmirSESEA/SuiteDeApps.git"
+  },
   "author": "DGIT-SESEA",
   "main": "main.js",
   "scripts": {
@@ -23,8 +27,6 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "DGIT-SESEA",
-        "repo": "SuiteApps",
         "releaseType": "release"
       }
     ],

@@ -2,8 +2,11 @@ name: Build and Release Electron App
 
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*' # Se ejecuta automáticamente cuando creas un tag como v1.0.2
+  workflow_dispatch:
 
 permissions:
   contents: write  # Necesario para crear Releases y subir instaladores
@@ -14,7 +17,9 @@ env:
 jobs:
   release:
     runs-on: ${{ matrix.os }}
-    
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -41,19 +46,14 @@ jobs:
 
       - name: Construir y Publicar (Windows)
         if: runner.os == 'Windows'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run release:win
 
       - name: Construir y Publicar (macOS)
         if: runner.os == 'macOS'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run release:mac
 
       - name: Construir y Publicar (Linux)
         if: runner.os == 'Linux'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           USE_SYSTEM_FPM: "true"
         run: npm run release:linux
