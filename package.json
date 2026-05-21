@@ -1,6 +1,6 @@
 {
-  "name": "sistema-de-aplicaciones-sesea",
-  "version": "3.0.1",
+  "name": "Sistema-de-Aplicaciones-SESEA",
+  "version": "3.1.1",
   "description": "Sistema de Aplicaciones SESEA",
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
     "build:win": "electron-builder --win",
     "build:mac": "electron-builder --mac",
     "build:linux": "electron-builder --linux",
-    "build:all": "electron-builder -wml",
+    "build:all": "electron-builder",
     "release": "electron-builder --publish always",
     "release:win": "electron-builder --win --publish always",
     "release:mac": "electron-builder --mac --publish always",
