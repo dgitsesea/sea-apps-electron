@@ -55,11 +55,53 @@ let mainWindow;
 let mainView;
 let supportWindow = null;
 
+const clearDirectory = (directoryPath) => {
+    try {
+        if (fs.existsSync(directoryPath)) {
+            fs.rmSync(directoryPath, { recursive: true, force: true });
+        }
+    } catch (err) {
+        log.warn(`No se pudo borrar el directorio temporal: ${directoryPath}`, err);
+    }
+};
+
+const clearTemporaryDataPreservingCookies = async (userDataPath) => {
+    const tempPaths = [
+        'Cache',
+        'GPUCache',
+        'Code Cache',
+        'Cached Data',
+        'Service Worker',
+        'Session Storage'
+    ].map((name) => path.join(userDataPath, name));
+
+    tempPaths.forEach(clearDirectory);
+
+    if (mainView && mainView.webContents && mainView.webContents.session) {
+        try {
+            await mainView.webContents.session.clearCache();
+            await mainView.webContents.session.clearStorageData({
+                storages: [
+                    'appcache',
+                    'serviceworkers',
+                    'cachestorage',
+                    'indexdb',
+                    'localstorage',
+                    'filesystem',
+                    'shadercache'
+                ]
+            });
+        } catch (err) {
+            log.warn('Error al limpiar datos temporales de la sesión.', err);
+        }
+    }
+};
+
 // ─────────────────────────────────────────────────────────────
 // Crear ventana principal
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────
 
-function createWindow() {
+async function createWindow() {
 
     mainWindow = new BrowserWindow({
         width: 1200,
@@ -107,16 +149,35 @@ function createWindow() {
         mainWindow.show();
     });
 
-    // Cargar URL inicial
+    // Cargar URL inicial y verificar versión para limpiar temporales.
     let urlToLoad = process.env.PAGINA_ABRIR || 'https://plataformadigital.guanajuato.gob.mx/';
     const configPath = path.join(app.getPath('userData'), 'last-url.json');
+    let config = {
+        lastUrl: urlToLoad,
+        lastVersion: app.getVersion()
+    };
+    let shouldClearTemp = false;
+
     try {
         if (fs.existsSync(configPath)) {
-            const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+            config = JSON.parse(fs.readFileSync(configPath, 'utf-8')) || config;
             if (config.lastUrl) urlToLoad = config.lastUrl;
+            if (config.lastVersion && config.lastVersion !== app.getVersion()) {
+                shouldClearTemp = true;
+            }
         }
     } catch (err) {
         log.error('Error leyendo config', err);
+    }
+
+    if (shouldClearTemp) {
+        await clearTemporaryDataPreservingCookies(app.getPath('userData'));
+        config.lastVersion = app.getVersion();
+        try {
+            fs.writeFileSync(configPath, JSON.stringify(config));
+        } catch (err) {
+            log.warn('No se pudo guardar versión actual en config tras limpiar temporales.', err);
+        }
     }
 
     mainView.webContents.loadURL(urlToLoad);
@@ -124,7 +185,9 @@ function createWindow() {
     // Guardar URL actual
     const saveUrl = (url) => {
         try {
-            fs.writeFileSync(configPath, JSON.stringify({ lastUrl: url }));
+            config.lastUrl = url;
+            config.lastVersion = app.getVersion();
+            fs.writeFileSync(configPath, JSON.stringify(config));
         } catch (err) {
             log.error('Error guardando config', err);
         }
@@ -328,9 +391,9 @@ function createWindow() {
 // Inicio de aplicación
 // ─────────────────────────────────────────────────────────────
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
 
-    createWindow();
+    await createWindow();
 
     // Solo verificar updates en producción
     if (app.isPackaged) {
