@@ -129,13 +129,53 @@ function createWindow() {
             log.error('Error guardando config', err);
         }
     };
+    const updateNavbarThemeColor = async () => {
+        const script = `(function () {
+            const normalize = value => value && value.trim ? value.trim() : value;
+            const isTransparent = color => !color || /^(transparent|rgba\(0, ?0, ?0, ?0\)|hsla\(0, ?0%, ?0%, ?0\))$/i.test(color);
+
+            const headerSelectors = ['header', 'main header', 'article header', '.page-header', '.site-header', '#header', '.header', 'nav'];
+            for (const selector of headerSelectors) {
+                const element = document.querySelector(selector);
+                if (element) {
+                    const bg = window.getComputedStyle(element).backgroundColor;
+                    if (!isTransparent(bg)) return normalize(bg);
+                }
+            }
+
+            const themeMeta = document.querySelector('meta[name="theme-color"]');
+            if (themeMeta && themeMeta.content) {
+                return normalize(themeMeta.content);
+            }
+
+            const bodyBg = window.getComputedStyle(document.body).backgroundColor;
+            if (!isTransparent(bodyBg)) return normalize(bodyBg);
+
+            const htmlBg = window.getComputedStyle(document.documentElement).backgroundColor;
+            if (!isTransparent(htmlBg)) return normalize(htmlBg);
+
+            return '#387c92';
+        })();`;
+
+        try {
+            const color = await mainView.webContents.executeJavaScript(script, true) || '#387c92';
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('navbar-theme-color', color);
+            }
+        } catch (err) {
+            log.warn('No se pudo determinar el color de encabezado de la página activa.', err);
+            if (mainWindow && !mainWindow.isDestroyed()) {
+                mainWindow.webContents.send('navbar-theme-color', '#387c92');
+            }
+        }
+    };
     mainView.webContents.on('did-navigate', (event, url) => saveUrl(url));
     mainView.webContents.on('did-navigate-in-page', (event, url) => saveUrl(url));
+    mainView.webContents.on('did-navigate-in-page', () => updateNavbarThemeColor());
 
     // ─────────────────────────────────────────────────────────
     // Badge de versión flotante
-    // ─────────────────────────────────────────────────────────
-
+    // ──────────────────────────────────────────────────────────────
     mainView.webContents.on('did-finish-load', () => {
 
         const version = app.getVersion();
@@ -169,6 +209,8 @@ function createWindow() {
                 document.body.appendChild(badge);
             })();
         `).catch(() => {});
+
+        updateNavbarThemeColor();
 
     });
 

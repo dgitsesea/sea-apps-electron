@@ -23,6 +23,7 @@
             padding: 0;
 
             background-color: #387c92;
+            transition: background-color 0.3s ease;
 
             font-family:
                 'Segoe UI',
@@ -91,7 +92,7 @@
 
             border: none;
 
-            color: #cccccc;
+            color: var(--navbar-text-color, #cccccc);
 
             font-size: 13px;
             font-weight: 500;
@@ -172,7 +173,7 @@
             animation:
                 activeGradient 4s ease infinite;
 
-            color: white;
+            color: var(--active-button-text-color, #ffffff);
 
             box-shadow:
                 0 4px 14px rgba(0, 120, 212, 0.4);
@@ -321,9 +322,100 @@
             window.api.openTiSupport();
         }
 
+        window.api.onNavbarThemeColor(color => {
+            if (!color) return;
+            document.body.style.backgroundColor = color;
+        });
+
         /* ================================= */
         /* BOTÓN ACTIVO */
         /* ================================= */
+
+        const parseColor = (value) => {
+            if (!value || typeof value !== 'string') return null;
+            value = value.trim();
+
+            const rgbMatch = value.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+            if (rgbMatch) {
+                return {
+                    r: Number(rgbMatch[1]),
+                    g: Number(rgbMatch[2]),
+                    b: Number(rgbMatch[3])
+                };
+            }
+
+            const hexMatch = value.match(/^#([a-f0-9]{3}|[a-f0-9]{6})$/i);
+            if (hexMatch) {
+                let hex = hexMatch[1];
+                if (hex.length === 3) {
+                    hex = hex.split('').map(c => c + c).join('');
+                }
+                return {
+                    r: parseInt(hex.substr(0, 2), 16),
+                    g: parseInt(hex.substr(2, 2), 16),
+                    b: parseInt(hex.substr(4, 2), 16)
+                };
+            }
+
+            return null;
+        };
+
+        const contrastColor = (background) => {
+            const rgb = parseColor(background);
+            if (!rgb) return '#ffffff';
+
+            const normalize = (value) => {
+                const channel = value / 255;
+                return channel <= 0.03928
+                    ? channel / 12.92
+                    : Math.pow((channel + 0.055) / 1.055, 2.4);
+            };
+
+            const lum = 0.2126 * normalize(rgb.r) + 0.7152 * normalize(rgb.g) + 0.0722 * normalize(rgb.b);
+            return lum > 0.55 ? '#111111' : '#ffffff';
+        };
+
+        const contrastRatio = (bg, fg) => {
+            const rgbBg = parseColor(bg);
+            const rgbFg = parseColor(fg);
+            if (!rgbBg || !rgbFg) return 0;
+
+            const luminance = (rgb) => {
+                const normalize = (value) => {
+                    const channel = value / 255;
+                    return channel <= 0.03928
+                        ? channel / 12.92
+                        : Math.pow((channel + 0.055) / 1.055, 2.4);
+                };
+                return 0.2126 * normalize(rgb.r) + 0.7152 * normalize(rgb.g) + 0.0722 * normalize(rgb.b);
+            };
+
+            const L1 = luminance(rgbBg);
+            const L2 = luminance(rgbFg);
+            return (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
+        };
+
+        const updateButtonTextColors = () => {
+            const navbarBg = document.body.style.backgroundColor || window.getComputedStyle(document.body).backgroundColor;
+            const baseText = contrastColor(navbarBg);
+            document.documentElement.style.setProperty('--navbar-text-color', baseText);
+
+            const activeButton = document.querySelector('button.active');
+            if (activeButton) {
+                const activeBg = window.getComputedStyle(activeButton).backgroundColor;
+                let activeText = contrastColor(activeBg || navbarBg);
+                if (contrastRatio(activeBg || navbarBg, activeText) < 4.5) {
+                    activeText = contrastColor(navbarBg);
+                }
+                document.documentElement.style.setProperty('--active-button-text-color', activeText);
+            }
+        };
+
+        window.api.onNavbarThemeColor(color => {
+            if (!color) return;
+            document.body.style.backgroundColor = color;
+            updateButtonTextColors();
+        });
 
         window.api.getLastUrl().then(url => {
 
@@ -366,6 +458,8 @@
             if (bestMatch) {
                 bestMatch.classList.add('active');
             }
+
+            updateButtonTextColors();
         });
 
     </script>

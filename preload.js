@@ -6,5 +6,10 @@ contextBridge.exposeInMainWorld('api', {
     getLastUrl: () => ipcRenderer.invoke('get-last-url'),
     openTiSupport: () => ipcRenderer.send('open-ti-support'),
     closeSupport: () => ipcRenderer.send('close-support'),
-    openExternal: (url) => ipcRenderer.send('open-external', url)
+    openExternal: (url) => ipcRenderer.send('open-external', url),
+    onNavbarThemeColor: (callback) => {
+        ipcRenderer.on('navbar-theme-color', (_event, color) => {
+            callback(color);
+        });
+    }
 });
