@@ -1,11 +1,14 @@
 name: Build and Release Electron App
 
+run-name: 📦 Build Multiplataforma ${{ github.ref_name }}
+
 on:
   push:
     branches:
       - main
     tags:
       - 'v*' # Se ejecuta automáticamente cuando creas un tag como v1.0.2
+
   workflow_dispatch:
     inputs:
       os:
@@ -28,11 +31,13 @@ env:
 jobs:
   release:
     runs-on: ${{ matrix.os }}
+
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     strategy:
       fail-fast: false
+
       matrix:
         os: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.os != 'all') && fromJson(format('["{0}"]', github.event.inputs.os)) || fromJson('["windows-latest","macos-latest","ubuntu-latest"]') }}
 
