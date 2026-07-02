@@ -174,6 +174,7 @@ async function createWindow() {
     mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
+        title: 'Recursos Digitales SEA',
         autoHideMenuBar: true,
         show: false,
         icon: path.join(__dirname, 'ico.ico'),
