@@ -47,6 +47,7 @@ let mainWindow;
 let mainView;
 let supportWindow = null;
 let manualUpdateCheckInProgress = false;
+let navbarHeight = 50;
 
 const getConfigPath = () => path.join(app.getPath('userData'), 'last-url.json');
 
@@ -209,7 +210,12 @@ async function createWindow() {
 
     const resizeView = () => {
         const bounds = mainWindow.getContentBounds();
-        mainView.setBounds({ x: 0, y: 50, width: bounds.width, height: bounds.height - 50 });
+        mainView.setBounds({
+            x: 0,
+            y: navbarHeight,
+            width: bounds.width,
+            height: Math.max(0, bounds.height - navbarHeight)
+        });
     };
 
     mainWindow.on('resize', resizeView);
@@ -352,6 +358,15 @@ async function createWindow() {
     ipcMain.removeAllListeners('reload');
     ipcMain.on('reload', () => {
         mainView.webContents.reload();
+    });
+
+    ipcMain.removeAllListeners('set-navbar-height');
+    ipcMain.on('set-navbar-height', (_event, height) => {
+        const nextHeight = Number(height);
+        if (!Number.isFinite(nextHeight)) return;
+
+        navbarHeight = Math.max(50, Math.min(320, nextHeight));
+        resizeView();
     });
 
     ipcMain.removeHandler('get-last-url');

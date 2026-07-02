@@ -36,6 +36,11 @@
             background: var(--topbar-bg);
             color: var(--topbar-text);
             font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: height 0.12s ease;
+        }
+
+        body.menu-open {
+            height: 260px;
         }
 
         .drag-region {
@@ -403,6 +408,8 @@
             openMenuIndex = null;
             dropdownMenu.hidden = true;
             dropdownMenu.innerHTML = '';
+            document.body.classList.remove('menu-open');
+            window.api.setNavbarHeight(50);
             document.querySelectorAll('.menu-trigger').forEach(button => {
                 button.classList.remove('open');
                 button.setAttribute('aria-expanded', 'false');
@@ -494,6 +501,8 @@
             const bounds = triggerButton.getBoundingClientRect();
             dropdownMenu.style.left = `${Math.max(8, Math.min(bounds.left, window.innerWidth - 250))}px`;
             dropdownMenu.hidden = false;
+            document.body.classList.add('menu-open');
+            window.api.setNavbarHeight(260);
             openMenuIndex = groupIndex;
             triggerButton.classList.add('open');
             triggerButton.setAttribute('aria-expanded', 'true');

@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('api', {
     navigate: (url) => ipcRenderer.send('navigate', url),
     reload: () => ipcRenderer.send('reload'),
+    setNavbarHeight: (height) => ipcRenderer.send('set-navbar-height', height),
     getLastUrl: () => ipcRenderer.invoke('get-last-url'),
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
     checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
