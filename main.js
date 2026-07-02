@@ -49,6 +49,7 @@ let mainView;
 let supportWindow = null;
 let manualUpdateCheckInProgress = false;
 let updateReadyToInstall = false;
+let updateInstallInProgress = false;
 let currentUrl = DEFAULT_URL;
 
 const APP_MENU_GROUPS = {
@@ -457,6 +458,53 @@ async function createWindow() {
         }
     }));
 
+    const installDownloadedUpdate = () => {
+        const status = {
+            status: 'installing',
+            message: 'Instalando actualización... La aplicación se reiniciará sola.',
+            canRestart: false
+        };
+
+        if (updateInstallInProgress) return status;
+
+        if (!updateReadyToInstall) {
+            return {
+                status: 'idle',
+                message: 'No hay una actualización lista para instalar.'
+            };
+        }
+
+        updateInstallInProgress = true;
+        updateReadyToInstall = false;
+        log.info('Instalando actualización en modo silencioso...');
+
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.setProgressBar(2);
+        }
+
+        sendUpdateStatus(status);
+
+        setTimeout(() => {
+            try {
+                autoUpdater.quitAndInstall(true, true);
+            } catch (err) {
+                updateInstallInProgress = false;
+                updateReadyToInstall = true;
+                if (mainWindow && !mainWindow.isDestroyed()) {
+                    mainWindow.setProgressBar(-1);
+                }
+                log.error(`Error al instalar actualización: ${err == null ? 'unknown' : err.message}`);
+                sendUpdateStatus({
+                    status: 'error',
+                    message: 'No se pudo iniciar la instalación.',
+                    canRestart: true
+                });
+            }
+        }, 1200);
+
+        return status;
+    };
+
     const openAppMenu = (groupId, point = {}) => {
         const menuTemplates = {
             recursos: buildNavigationMenuItems(APP_MENU_GROUPS.recursos),
@@ -478,11 +526,8 @@ async function createWindow() {
                 },
                 {
                     label: 'Reiniciar y actualizar',
-                    enabled: updateReadyToInstall,
-                    click: () => {
-                        log.info('Reiniciando para instalar actualización...');
-                        autoUpdater.quitAndInstall(false, true);
-                    }
+                    enabled: updateReadyToInstall && !updateInstallInProgress,
+                    click: installDownloadedUpdate
                 }
             ]
         };
@@ -524,19 +569,7 @@ async function createWindow() {
 
     ipcMain.removeHandler('restart-and-update');
     ipcMain.handle('restart-and-update', () => {
-        if (!updateReadyToInstall) {
-            return {
-                status: 'idle',
-                message: 'No hay una actualización lista para instalar.'
-            };
-        }
-
-        log.info('Reiniciando para instalar actualización...');
-        autoUpdater.quitAndInstall(false, true);
-        return {
-            status: 'restarting',
-            message: 'Reiniciando para actualizar...'
-        };
+        return installDownloadedUpdate();
     });
 
     ipcMain.removeAllListeners('open-app-menu');
@@ -611,6 +644,7 @@ autoUpdater.on('checking-for-update', () => {
 
 autoUpdater.on('update-available', (info) => {
     updateReadyToInstall = false;
+    updateInstallInProgress = false;
     log.info(`Actualización disponible: v${info.version}`);
     sendUpdateStatus({
         status: 'available',
@@ -621,6 +655,7 @@ autoUpdater.on('update-available', (info) => {
 
 autoUpdater.on('update-not-available', () => {
     updateReadyToInstall = false;
+    updateInstallInProgress = false;
     log.info('La aplicación está actualizada.');
     manualUpdateCheckInProgress = false;
     sendUpdateStatus({
@@ -647,6 +682,7 @@ autoUpdater.on('update-downloaded', (info) => {
     log.info(`Actualización descargada: v${info.version}`);
     manualUpdateCheckInProgress = false;
     updateReadyToInstall = true;
+    updateInstallInProgress = false;
     if (mainWindow) {
         mainWindow.setProgressBar(-1);
     }
@@ -661,6 +697,7 @@ autoUpdater.on('update-downloaded', (info) => {
 autoUpdater.on('error', (err) => {
     manualUpdateCheckInProgress = false;
     updateReadyToInstall = false;
+    updateInstallInProgress = false;
     log.error(`Error en AutoUpdater: ${err == null ? 'unknown' : err.message}`);
     sendUpdateStatus({
         status: 'error',
