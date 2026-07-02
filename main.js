@@ -20,9 +20,9 @@ autoUpdater.logger.transports.file.level = 'info';
 autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = false;
 
-log.info('AplicaciÃ³n iniciada.');
+log.info('Aplicación iniciada.');
 
-const DEFAULT_URL = process.env.PAGINA_ABRIR || 'https://plataformadigital.guanajuato.gob.mx/';
+const DEFAULT_URL = process.env.PAGINA_ABRIR || 'https://login.seseaguanajuato.org';
 
 const ALLOWED_ORIGINS = [
     'https://sistemaestatalanticorrupcion.guanajuato.gob.mx',
@@ -73,6 +73,10 @@ const APP_MENU_GROUPS = {
         {
             label: 'Intranet SESEA',
             url: 'https://intranet.seseaguanajuato.org/'
+        },
+        {
+            label: 'SIREG',
+            url: 'https://sireg.seseaguanajuato.org/'
         }
     ],
     soporte: [
@@ -378,7 +382,7 @@ async function createWindow() {
                 ].join(';');
                 document.body.appendChild(badge);
             })();
-        `).catch(() => {});
+        `).catch(() => { });
 
         updateNavbarThemeColor();
     });
