@@ -1,6 +1,6 @@
 {
   "name": "sistema_de_aplicaciones_sesea",
-  "version": "5.5.8",
+  "version": "5.5.9",
   "description": "Recursos Digitales SEA",
   "repository": {
     "type": "git",
@@ -45,7 +45,10 @@
       "createStartMenuShortcut": true
     },
     "mac": {
-      "target": "dmg",
+      "target": [
+        "dmg",
+        "zip"
+      ],
       "category": "public.app-category.productivity",
       "icon": "build/icon.png"
     },

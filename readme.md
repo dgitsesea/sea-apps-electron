@@ -1,27 +1,28 @@
-Para generar una nueva versión o actualización de los instalables:
+# Recursos Digitales SEA
 
-​
+## Generar nueva versión
 
-Abir package.json e ir a la version actual y cambiar la que sea necesaria (ej. version 1.2.3), que será la version que se subirá a github para que se puedan actualizar las aplicaciones de los usuarios (Aplicaciones de escritorio).
+1. Subir la versión en `package.json` y `package-lock.json`.
+   - Recomendado: `npm version patch --no-git-tag-version`
+2. Si se agregan nuevos sitios, actualizar `ALLOWED_ORIGINS` en `main.js`.
+3. Hacer commit con una descripción clara en español.
+4. Generar instaladores:
+   - Windows: `npm run build:win`
+   - macOS: `npm run build:mac`
+   - Linux: `npm run build:linux`
+   - Todos: `npm run build:all`
+5. Publicar release:
+   - Todos: `npm run release`
+   - Por plataforma: `npm run release:win`, `npm run release:mac` o `npm run release:linux`
 
-​
+## Actualizaciones automáticas
 
-En main, en la seccion de allowed origins se podrán agregar los sitios permitidos que se abriran dentro de la aplicación.
+- Windows usa el instalador NSIS (`.exe`) y el archivo `latest.yml`.
+- macOS requiere publicar el `.dmg` para instalación manual y el `.zip` para actualización automática.
+- En macOS también debe publicarse `latest-mac.yml`; electron-builder lo genera cuando existe el target `zip`.
+- No eliminar de GitHub Releases los archivos `.zip`, `.blockmap`, `latest.yml` o `latest-mac.yml`, porque el updater los usa.
 
-​
+## Enlaces de descarga
 
-Para realizar los cambios en la rama main de github, poner una descripción y hacer el commit.
+Para actualizar los enlaces de descarga de WordPress, usar los archivos generados en GitHub Releases.
 
-​
-
-En la consola se deberá hacer : npm run build:all para generar el paquete de cada plataforma (win-mac-ubuntu).
-
-​
-
-Despues se deberá correr: npm run release, que será el que genera el repositorio en github con los nuevos instalables.
-
-​
-
-Para actualizar los enlaces de descarga de wordpress, se pueden copiar los enlaces que se generaron en releases de github para vincularlos y actualizarlos. En caso que un usuario ya tenga una antigua version, al abrir su app de escritorio detectará que hay una nueva version y le pedirá actualizarla. Esta se descarga de manera automática.
-
-​
