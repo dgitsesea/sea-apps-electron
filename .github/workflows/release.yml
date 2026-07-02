@@ -37,6 +37,7 @@ jobs:
 
     strategy:
       fail-fast: false
+      max-parallel: 1
 
       matrix:
         os: ${{ (github.event_name == 'workflow_dispatch' && github.event.inputs.os != 'all') && fromJson(format('["{0}"]', github.event.inputs.os)) || fromJson('["windows-latest","macos-latest","ubuntu-latest"]') }}
