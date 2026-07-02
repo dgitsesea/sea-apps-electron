@@ -16,25 +16,14 @@ const {
 const { autoUpdater } = require('electron-updater');
 const log = require('electron-log');
 
-// ─────────────────────────────────────────────────────────────
-// Logger
-// ─────────────────────────────────────────────────────────────
-
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
-
-log.info('Aplicación iniciada.');
-
-// ─────────────────────────────────────────────────────────────
-// Configuración Auto Updater
-// ─────────────────────────────────────────────────────────────
-
 autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = true;
 
-// ─────────────────────────────────────────────────────────────
-// URL Permitida
-// ─────────────────────────────────────────────────────────────
+log.info('Aplicación iniciada.');
+
+const DEFAULT_URL = process.env.PAGINA_ABRIR || 'https://plataformadigital.guanajuato.gob.mx/';
 
 const ALLOWED_ORIGINS = [
     'https://sistemaestatalanticorrupcion.guanajuato.gob.mx',
@@ -43,17 +32,101 @@ const ALLOWED_ORIGINS = [
     'https://plataformadigital.guanajuato.gob.mx',
     'https://intranet.seseaguanajuato.org',
     'https://login.seseaguanajuato.org',
+    'https://devlogin.seseaguanajuato.org',
+    'https://mesadeayuda.seseaguanajuato.org',
     'https://devsireg.seseaguanajuato.org',
     'https://sireg.seseaguanajuato.org'
 ];
 
-// ─────────────────────────────────────────────────────────────
-// Variables globales
-// ─────────────────────────────────────────────────────────────
+const ALLOWED_MAILTO_RECIPIENTS = [
+    'dgit.sesea@guanajuato.gob.mx',
+    'pde.sesea@guanajuato.gob.mx',
+    'aegarciam@guanajuato.gob.mx'
+];
 
 let mainWindow;
 let mainView;
 let supportWindow = null;
+
+const getConfigPath = () => path.join(app.getPath('userData'), 'last-url.json');
+
+const isAllowedUrl = (url) => {
+    try {
+        return ALLOWED_ORIGINS.includes(new URL(url).origin);
+    } catch {
+        return false;
+    }
+};
+
+const getSafeAppUrl = (url, fallback = DEFAULT_URL) => {
+    if (isAllowedUrl(url)) return url;
+    if (isAllowedUrl(fallback)) return fallback;
+    return 'https://plataformadigital.guanajuato.gob.mx/';
+};
+
+const isAllowedExternalUrl = (url) => {
+    try {
+        const parsedUrl = new URL(url);
+
+        if (parsedUrl.protocol === 'mailto:') {
+            const recipients = parsedUrl.pathname
+                .split(',')
+                .map((recipient) => decodeURIComponent(recipient).trim().toLowerCase())
+                .filter(Boolean);
+
+            return recipients.length > 0
+                && recipients.every((recipient) => ALLOWED_MAILTO_RECIPIENTS.includes(recipient));
+        }
+
+        return parsedUrl.protocol === 'https:' && isAllowedUrl(url);
+    } catch {
+        return false;
+    }
+};
+
+const loadAllowedUrl = (url) => {
+    if (!mainView || !mainView.webContents) return false;
+
+    if (!isAllowedUrl(url)) {
+        log.warn(`Navegación bloqueada: ${url}`);
+        return false;
+    }
+
+    mainView.webContents.loadURL(url);
+    return true;
+};
+
+const readSavedConfig = (fallbackUrl) => {
+    const configPath = getConfigPath();
+    const config = {
+        lastUrl: fallbackUrl,
+        lastVersion: app.getVersion()
+    };
+
+    try {
+        if (!fs.existsSync(configPath)) return config;
+
+        const savedConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+        if (!savedConfig || typeof savedConfig !== 'object') return config;
+
+        return {
+            ...config,
+            ...savedConfig,
+            lastUrl: getSafeAppUrl(savedConfig.lastUrl, fallbackUrl)
+        };
+    } catch (err) {
+        log.error('Error leyendo config', err);
+        return config;
+    }
+};
+
+const writeSavedConfig = (config) => {
+    try {
+        fs.writeFileSync(getConfigPath(), JSON.stringify(config));
+    } catch (err) {
+        log.error('Error guardando config', err);
+    }
+};
 
 const clearDirectory = (directoryPath) => {
     try {
@@ -92,21 +165,16 @@ const clearTemporaryDataPreservingCookies = async (userDataPath) => {
                 ]
             });
         } catch (err) {
-            log.warn('Error al limpiar datos temporales de la sesión.', err);
+            log.warn('Error al limpiar datos temporales de la sesion.', err);
         }
     }
 };
 
-// ─────────────────────────────────────────────────────────────
-// Crear ventana principal
-// ─────────────────────────────────────────────
-
 async function createWindow() {
-
     mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
-        autoHideMenuBar: true, // Ocultamos la barra de menús
+        autoHideMenuBar: true,
         show: false,
         icon: path.join(__dirname, 'ico.ico'),
         webPreferences: {
@@ -117,12 +185,9 @@ async function createWindow() {
         }
     });
 
-    Menu.setApplicationMenu(null); // Desactivar el menú nativo
-
-    // Cargar la barra de navegación web
+    Menu.setApplicationMenu(null);
     mainWindow.loadFile('navbar.html');
 
-    // Crear la vista para las páginas web
     mainView = new WebContentsView({
         webPreferences: {
             nodeIntegration: false,
@@ -135,7 +200,6 @@ async function createWindow() {
 
     mainWindow.contentView.addChildView(mainView);
 
-    // Ajustar el tamaño de la vista cuando la ventana cambie de tamaño
     const resizeView = () => {
         const bounds = mainWindow.getContentBounds();
         mainView.setBounds({ x: 0, y: 50, width: bounds.width, height: bounds.height - 50 });
@@ -143,59 +207,42 @@ async function createWindow() {
 
     mainWindow.on('resize', resizeView);
 
-    // Mostrar ventana cuando cargue
     mainWindow.once('ready-to-show', () => {
         resizeView();
         mainWindow.show();
     });
 
-    // Cargar URL inicial y verificar versión para limpiar temporales.
-    let urlToLoad = process.env.PAGINA_ABRIR || 'https://plataformadigital.guanajuato.gob.mx/';
-    const configPath = path.join(app.getPath('userData'), 'last-url.json');
-    let config = {
-        lastUrl: urlToLoad,
-        lastVersion: app.getVersion()
-    };
+    let config = readSavedConfig(getSafeAppUrl(DEFAULT_URL));
+    let urlToLoad = config.lastUrl;
     let shouldClearTemp = false;
 
-    try {
-        if (fs.existsSync(configPath)) {
-            config = JSON.parse(fs.readFileSync(configPath, 'utf-8')) || config;
-            if (config.lastUrl) urlToLoad = config.lastUrl;
-            if (config.lastVersion && config.lastVersion !== app.getVersion()) {
-                shouldClearTemp = true;
-            }
-        }
-    } catch (err) {
-        log.error('Error leyendo config', err);
+    if (config.lastVersion && config.lastVersion !== app.getVersion()) {
+        shouldClearTemp = true;
     }
 
     if (shouldClearTemp) {
         await clearTemporaryDataPreservingCookies(app.getPath('userData'));
         config.lastVersion = app.getVersion();
-        try {
-            fs.writeFileSync(configPath, JSON.stringify(config));
-        } catch (err) {
-            log.warn('No se pudo guardar versión actual en config tras limpiar temporales.', err);
-        }
+        writeSavedConfig(config);
     }
 
-    mainView.webContents.loadURL(urlToLoad);
+    loadAllowedUrl(urlToLoad);
 
-    // Guardar URL actual
     const saveUrl = (url) => {
-        try {
-            config.lastUrl = url;
-            config.lastVersion = app.getVersion();
-            fs.writeFileSync(configPath, JSON.stringify(config));
-        } catch (err) {
-            log.error('Error guardando config', err);
+        if (!isAllowedUrl(url)) {
+            log.warn(`No se guardó URL no permitida: ${url}`);
+            return;
         }
+
+        config.lastUrl = url;
+        config.lastVersion = app.getVersion();
+        writeSavedConfig(config);
     };
+
     const updateNavbarThemeColor = async () => {
         const script = `(function () {
             const normalize = value => value && value.trim ? value.trim() : value;
-            const isTransparent = color => !color || /^(transparent|rgba\(0, ?0, ?0, ?0\)|hsla\(0, ?0%, ?0%, ?0\))$/i.test(color);
+            const isTransparent = color => !color || /^(transparent|rgba\\(0, ?0, ?0, ?0\\)|hsla\\(0, ?0%, ?0%, ?0\\))$/i.test(color);
 
             const headerSelectors = ['header', 'main header', 'article header', '.page-header', '.site-header', '#header', '.header', 'nav'];
             for (const selector of headerSelectors) {
@@ -232,15 +279,17 @@ async function createWindow() {
             }
         }
     };
-    mainView.webContents.on('did-navigate', (event, url) => saveUrl(url));
-    mainView.webContents.on('did-navigate-in-page', (event, url) => saveUrl(url));
-    mainView.webContents.on('did-navigate-in-page', () => updateNavbarThemeColor());
 
-    // ─────────────────────────────────────────────────────────
-    // Badge de versión flotante
-    // ──────────────────────────────────────────────────────────────
+    mainView.webContents.on('did-navigate', (_event, url) => {
+        saveUrl(url);
+        updateNavbarThemeColor();
+    });
+    mainView.webContents.on('did-navigate-in-page', (_event, url) => {
+        saveUrl(url);
+        updateNavbarThemeColor();
+    });
+
     mainView.webContents.on('did-finish-load', () => {
-
         const version = app.getVersion();
 
         mainView.webContents.executeJavaScript(`
@@ -274,46 +323,23 @@ async function createWindow() {
         `).catch(() => {});
 
         updateNavbarThemeColor();
-
     });
-
-    // ─────────────────────────────────────────────────────────
-    // Bloquear navegación externa
-    // ─────────────────────────────────────────────────────────
 
     mainView.webContents.on('will-navigate', (event, url) => {
-        try {
-            const targetOrigin = new URL(url).origin;
-            if (!ALLOWED_ORIGINS.includes(targetOrigin)) {
-                event.preventDefault();
-                log.warn(`Navegación bloqueada: ${url}`);
-            }
-        } catch {
+        if (!isAllowedUrl(url)) {
             event.preventDefault();
+            log.warn(`Navegación bloqueada: ${url}`);
         }
     });
-
-    // ─────────────────────────────────────────────────────────
-    // Control de popups y nuevas ventanas
-    // ─────────────────────────────────────────────────────────
 
     mainView.webContents.setWindowOpenHandler(({ url }) => {
-        try {
-            // Forzamos a que cualquier enlace (incluso los de target="_blank")
-            // se abra dentro de la misma vista de la aplicación.
-            mainView.webContents.loadURL(url);
-            return { action: 'deny' };
-        } catch {
-            return { action: 'deny' };
-        }
+        loadAllowedUrl(url);
+        return { action: 'deny' };
     });
 
-    // ─────────────────────────────────────────────────────────
-    // IPC para recibir acciones de la barra de navegación
-    // ─────────────────────────────────────────────────────────
     ipcMain.removeAllListeners('navigate');
-    ipcMain.on('navigate', (event, url) => {
-        mainView.webContents.loadURL(url);
+    ipcMain.on('navigate', (_event, url) => {
+        loadAllowedUrl(url);
     });
 
     ipcMain.removeAllListeners('reload');
@@ -323,16 +349,7 @@ async function createWindow() {
 
     ipcMain.removeHandler('get-last-url');
     ipcMain.handle('get-last-url', () => {
-        try {
-            const configPath = path.join(app.getPath('userData'), 'last-url.json');
-            if (fs.existsSync(configPath)) {
-                const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-                if (config.lastUrl) return config.lastUrl;
-            }
-        } catch (err) {
-            // Ignorar
-        }
-        return process.env.PAGINA_ABRIR || 'https://plataformadigital.guanajuato.gob.mx/';
+        return readSavedConfig(getSafeAppUrl(DEFAULT_URL)).lastUrl;
     });
 
     ipcMain.removeAllListeners('open-ti-support');
@@ -379,71 +396,53 @@ async function createWindow() {
     });
 
     ipcMain.removeAllListeners('open-external');
-    ipcMain.on('open-external', (event, url) => {
-        if (url && (url.startsWith('mailto:') || url.startsWith('https://') || url.startsWith('http://'))) {
-            shell.openExternal(url);
+    ipcMain.on('open-external', (_event, url) => {
+        if (!isAllowedExternalUrl(url)) {
+            log.warn(`Enlace externo bloqueado: ${url}`);
+            return;
         }
-    });
 
+        shell.openExternal(url);
+    });
 }
 
-// ─────────────────────────────────────────────────────────────
-// Inicio de aplicación
-// ─────────────────────────────────────────────────────────────
-
 app.whenReady().then(async () => {
-
     await createWindow();
 
-    // Solo verificar updates en producción
     if (app.isPackaged) {
-
         log.info('Aplicación empaquetada. Verificando updates...');
-
-        // Buscar actualizaciones
         autoUpdater.checkForUpdatesAndNotify();
 
-        // Revisar cada 30 minutos
         setInterval(() => {
             log.info('Verificación automática de updates...');
             autoUpdater.checkForUpdatesAndNotify();
         }, 1000 * 60 * 30);
-
     } else {
         log.info('Modo desarrollo. AutoUpdater desactivado.');
     }
-
 });
-
-// ─────────────────────────────────────────────────────────────
-// Cerrar app
-// ─────────────────────────────────────────────────────────────
 
 app.on('window-all-closed', () => {
     app.quit();
 });
 
-// ─────────────────────────────────────────────────────────────
-// Seguridad adicional
-// ─────────────────────────────────────────────────────────────
-
 app.on('web-contents-created', (_event, contents) => {
     contents.on('will-navigate', (event, url) => {
-        try {
-            const targetOrigin = new URL(url).origin;
-            if (!ALLOWED_ORIGINS.includes(targetOrigin)) {
-                event.preventDefault();
-                log.warn(`[web-contents-created] Navegación bloqueada: ${url}`);
-            }
-        } catch {
+        if (!isAllowedUrl(url)) {
             event.preventDefault();
+            log.warn(`[web-contents-created] Navegación bloqueada: ${url}`);
         }
     });
-});
 
-// ─────────────────────────────────────────────────────────────
-// Eventos AutoUpdater
-// ─────────────────────────────────────────────────────────────
+    contents.setWindowOpenHandler(({ url }) => {
+        if (!isAllowedUrl(url)) {
+            log.warn(`[web-contents-created] Popup bloqueado: ${url}`);
+            return { action: 'deny' };
+        }
+
+        return { action: 'allow' };
+    });
+});
 
 autoUpdater.on('checking-for-update', () => {
     log.info('Verificando actualizaciones...');
@@ -493,5 +492,5 @@ autoUpdater.on('update-downloaded', (info) => {
 });
 
 autoUpdater.on('error', (err) => {
-    log.error(`Error en AutoUpdater: ${err == null ? "unknown" : err.message}`);
+    log.error(`Error en AutoUpdater: ${err == null ? 'unknown' : err.message}`);
 });
