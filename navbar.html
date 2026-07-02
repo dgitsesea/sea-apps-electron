@@ -188,6 +188,21 @@
             flex-grow: 1;
         }
 
+        .version-badge {
+            color: var(--navbar-text-color, #cccccc);
+            font-size: 12px;
+            font-weight: 600;
+            height: 28px;
+            padding: 5px 9px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.18);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            display: flex;
+            align-items: center;
+            white-space: nowrap;
+            -webkit-app-region: no-drag;
+        }
+
         .reload-btn {
             background-color: #c3d8de;
             box-shadow:
@@ -290,6 +305,7 @@
         
 
         <div class="spacer"></div>
+        <div id="version-badge" class="version-badge">v...</div>
         <button class="support-btn" onclick="openTiSupport()">
             Soporte TI
         </button>
@@ -461,6 +477,12 @@
             }
 
             updateButtonTextColors();
+        });
+
+        window.api.getAppVersion().then(version => {
+            if (!version) return;
+            document.title = `Recursos Digitales SEA v${version}`;
+            document.getElementById('version-badge').textContent = `v${version}`;
         });
 
     </script>

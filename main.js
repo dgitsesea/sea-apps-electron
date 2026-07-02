@@ -6,7 +6,6 @@ const fs = require('fs');
 const {
     app,
     BrowserWindow,
-    dialog,
     shell,
     Menu,
     WebContentsView,
@@ -174,7 +173,7 @@ async function createWindow() {
     mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
-        title: 'Recursos Digitales SEA',
+        title: `Recursos Digitales SEA v${app.getVersion()}`,
         autoHideMenuBar: true,
         show: false,
         icon: path.join(__dirname, 'ico.ico'),
@@ -353,6 +352,11 @@ async function createWindow() {
         return readSavedConfig(getSafeAppUrl(DEFAULT_URL)).lastUrl;
     });
 
+    ipcMain.removeHandler('get-app-version');
+    ipcMain.handle('get-app-version', () => {
+        return app.getVersion();
+    });
+
     ipcMain.removeAllListeners('open-ti-support');
     ipcMain.on('open-ti-support', () => {
         if (supportWindow) {
@@ -412,11 +416,11 @@ app.whenReady().then(async () => {
 
     if (app.isPackaged) {
         log.info('Aplicación empaquetada. Verificando updates...');
-        autoUpdater.checkForUpdatesAndNotify();
+        autoUpdater.checkForUpdates();
 
         setInterval(() => {
             log.info('Verificación automática de updates...');
-            autoUpdater.checkForUpdatesAndNotify();
+            autoUpdater.checkForUpdates();
         }, 1000 * 60 * 30);
     } else {
         log.info('Modo desarrollo. AutoUpdater desactivado.');
@@ -451,12 +455,6 @@ autoUpdater.on('checking-for-update', () => {
 
 autoUpdater.on('update-available', (info) => {
     log.info(`Actualización disponible: v${info.version}`);
-    dialog.showMessageBox({
-        type: 'info',
-        title: 'Actualización disponible',
-        message: `Nueva versión disponible: v${info.version}`,
-        detail: 'La actualización se descargará automáticamente.'
-    });
 });
 
 autoUpdater.on('update-not-available', () => {
@@ -476,20 +474,7 @@ autoUpdater.on('update-downloaded', (info) => {
     if (mainWindow) {
         mainWindow.setProgressBar(-1);
     }
-    dialog.showMessageBox({
-        type: 'info',
-        title: 'Actualización lista',
-        message: `La versión ${info.version} fue descargada correctamente.`,
-        detail: 'La aplicación se reiniciará para instalar la actualización.',
-        buttons: ['Reiniciar ahora', 'Más tarde'],
-        defaultId: 0,
-        cancelId: 1
-    }).then(({ response }) => {
-        if (response === 0) {
-            log.info('Instalando actualización...');
-            autoUpdater.quitAndInstall();
-        }
-    });
+    log.info('La actualización se instalará automáticamente al cerrar la aplicación.');
 });
 
 autoUpdater.on('error', (err) => {
