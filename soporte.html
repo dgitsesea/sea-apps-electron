@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soporte TI - SESEA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box;
@@ -16,7 +15,7 @@
         html,
         body {
             background: transparent;
-            font-family: 'Outfit', 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             width: 100%;
             height: 100%;
             overflow: hidden;
@@ -76,7 +75,7 @@
             background: transparent;
             border: none;
             color: #888;
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><circle cx="10" cy="10" r="8" fill="none" stroke="%234fc3f7" stroke-width="1.5" stroke-dasharray="3,1"/><circle cx="10" cy="10" r="5" fill="none" stroke="%230078d4" stroke-width="1.5"/><path d="M16 16 L22 22" stroke="%234fc3f7" stroke-width="3" stroke-linecap="round"/></svg>') 10 10, pointer;
+            cursor: pointer;
             width: 28px;
             height: 28px;
             display: flex;
@@ -199,7 +198,7 @@
         }
 
         .detail-item.clickable {
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><circle cx="10" cy="10" r="8" fill="none" stroke="%234fc3f7" stroke-width="1.5" stroke-dasharray="3,1"/><circle cx="10" cy="10" r="5" fill="none" stroke="%230078d4" stroke-width="1.5"/><path d="M16 16 L22 22" stroke="%234fc3f7" stroke-width="3" stroke-linecap="round"/></svg>') 10 10, pointer;
+            cursor: pointer;
         }
 
         .detail-item.clickable:hover {
@@ -222,7 +221,7 @@
             background: transparent;
             border: none;
             color: #666;
-            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><circle cx="10" cy="10" r="8" fill="none" stroke="%234fc3f7" stroke-width="1.5" stroke-dasharray="3,1"/><circle cx="10" cy="10" r="5" fill="none" stroke="%230078d4" stroke-width="1.5"/><path d="M16 16 L22 22" stroke="%234fc3f7" stroke-width="3" stroke-linecap="round"/></svg>') 10 10, pointer;
+            cursor: pointer;
             padding: 2px;
             display: flex;
             align-items: center;
@@ -280,6 +279,222 @@
             transform: translateX(-50%) translateY(0);
             opacity: 1;
         }
+
+        body {
+            cursor: default;
+        }
+
+        .window-wrapper {
+            background: #f8fafc;
+            border: 1px solid rgba(15, 23, 42, 0.14);
+            border-radius: 18px;
+            box-shadow: 0 24px 64px rgba(2, 8, 23, 0.46);
+            color: #182230;
+        }
+
+        .titlebar {
+            height: 48px;
+            padding: 0 18px;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .titlebar-title {
+            color: #0f172a;
+            font-size: 13px;
+            letter-spacing: 0;
+            gap: 10px;
+        }
+
+        .titlebar-title svg {
+            color: #0f766e;
+        }
+
+        .close-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .close-btn:hover {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .content {
+            padding: 18px 24px 14px;
+            gap: 14px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            overflow-y: auto;
+        }
+
+        .content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border: 2px solid #f8fafc;
+            border-radius: 999px;
+        }
+
+        .header {
+            margin-bottom: 2px;
+            padding: 16px 18px;
+            border: 1px solid #dbeafe;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ecfeff 0%, #f8fafc 70%);
+            text-align: left;
+        }
+
+        .header h1 {
+            margin-bottom: 6px;
+            background: none;
+            color: #0f172a;
+            -webkit-text-fill-color: currentColor;
+            font-size: 22px;
+            line-height: 1.15;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0;
+            line-height: 1.4;
+            text-transform: none;
+        }
+
+        .cards-container {
+            gap: 10px;
+        }
+
+        .card {
+            align-items: center;
+            gap: 14px;
+            padding: 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #ffffff;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+        }
+
+        .card:hover {
+            background: #ffffff;
+            border-color: #93c5fd;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .card-icon {
+            width: 38px;
+            height: 38px;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .card-title {
+            margin-bottom: 3px;
+            color: #111827;
+            font-size: 14px;
+            line-height: 1.25;
+        }
+
+        .card-desc {
+            margin-bottom: 10px;
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .contact-details {
+            gap: 8px;
+        }
+
+        .detail-item {
+            min-height: 32px;
+            padding: 7px 9px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #f8fafc;
+            color: #334155;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .detail-item.clickable {
+            cursor: pointer;
+        }
+
+        .detail-item.clickable:hover {
+            background: #eff6ff;
+            border-color: #93c5fd;
+            color: #1d4ed8;
+        }
+
+        .detail-icon,
+        .detail-item.clickable:hover .detail-icon {
+            color: #64748b;
+        }
+
+        .copy-btn {
+            width: 22px;
+            height: 22px;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
+        .copy-btn:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        .footer {
+            padding: 10px 24px 12px;
+            border-top: 1px solid #e2e8f0;
+            background: #ffffff;
+            color: #64748b;
+        }
+
+        .footer-logo {
+            color: #0f172a;
+        }
+
+        .toast {
+            bottom: 52px;
+            border-radius: 10px;
+            background: #0f766e;
+            box-shadow: 0 12px 32px rgba(15, 118, 110, 0.28);
+        }
+
+        @media (max-width: 620px) {
+            .window-wrapper {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .content {
+                padding: 16px;
+            }
+
+            .card {
+                align-items: flex-start;
+            }
+
+            .footer {
+                padding: 10px 16px;
+            }
+        }
     </style>
 </head>
 
@@ -293,7 +508,7 @@
                     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                     <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
-                <span>Soporte TI - SESEA</span>
+                <span>Centro de soporte</span>
             </div>
             <button class="close-btn" onclick="closeWindow()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -306,8 +521,8 @@
 
         <div class="content">
             <div class="header">
-                <h1>Contacto Personal de TI</h1>
-                <p>Dirección General de Tecnologías de la Información</p>
+                <h1>Soporte TI</h1>
+                <p>Mesa de ayuda, Plataforma Digital e infraestructura institucional.</p>
             </div>
 
             <div class="cards-container">
