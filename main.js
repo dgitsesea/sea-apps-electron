@@ -183,6 +183,17 @@ const sendNavigationState = (url) => {
     }
 };
 
+const runDownloadedUpdateInstaller = () => {
+    if (updateInstallInProgress) return true;
+    if (!updateReadyToInstall) return false;
+
+    updateInstallInProgress = true;
+    updateReadyToInstall = false;
+    log.info('Instalando actualización en modo silencioso...');
+    autoUpdater.quitAndInstall(true, true);
+    return true;
+};
+
 const clearDirectory = (directoryPath) => {
     try {
         if (fs.existsSync(directoryPath)) {
@@ -474,10 +485,6 @@ async function createWindow() {
             };
         }
 
-        updateInstallInProgress = true;
-        updateReadyToInstall = false;
-        log.info('Instalando actualización en modo silencioso...');
-
         if (mainWindow && !mainWindow.isDestroyed()) {
             mainWindow.setProgressBar(2);
         }
@@ -486,7 +493,7 @@ async function createWindow() {
 
         setTimeout(() => {
             try {
-                autoUpdater.quitAndInstall(true, true);
+                runDownloadedUpdateInstaller();
             } catch (err) {
                 updateInstallInProgress = false;
                 updateReadyToInstall = true;
@@ -617,7 +624,16 @@ app.whenReady().then(async () => {
 });
 
 app.on('window-all-closed', () => {
+    if (runDownloadedUpdateInstaller()) return;
+
     app.quit();
+});
+
+app.on('before-quit', (event) => {
+    if (updateReadyToInstall && !updateInstallInProgress) {
+        event.preventDefault();
+        runDownloadedUpdateInstaller();
+    }
 });
 
 app.on('web-contents-created', (_event, contents) => {
