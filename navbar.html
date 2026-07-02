@@ -1,352 +1,217 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 
 <head>
     <meta charset="utf-8">
     <title>Recursos Digitales SEA</title>
 
     <style>
-        /* ================================= */
-        /* CURSOR GLOBAL */
-        /* ================================= */
-
-        html,
-        body,
-        button,
-        .nav-container,
-        * {
-            cursor:
-                pointer;
+        :root {
+            --navbar-text-color: #ffffff;
+            --active-button-text-color: #ffffff;
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
         body {
             margin: 0;
-            padding: 0;
-
-            background-color: #387c92;
-            transition: background-color 0.3s ease;
-
-            font-family:
-                'Segoe UI',
-                Roboto,
-                Helvetica,
-                Arial,
-                sans-serif;
-
-            display: flex;
-            align-items: center;
-
+            width: 100%;
             height: 50px;
-
             overflow: hidden;
-
-            border-bottom: 1px solid #333;
-
             user-select: none;
-
             -webkit-user-select: none;
         }
 
-        /* ================================= */
-        /* REGIÓN DRAGGABLE */
-        /* ================================= */
+        body {
+            background-color: #387c92;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.28);
+            color: var(--navbar-text-color);
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            transition: background-color 0.25s ease;
+        }
 
         .drag-region {
             position: fixed;
-
-            top: 0;
-            left: 0;
-
-            width: 100%;
+            inset: 0;
             height: 50px;
-
             -webkit-app-region: drag;
-
             z-index: 1;
         }
 
-        /* ================================= */
-        /* NAV */
-        /* ================================= */
-
-        .nav-container {
+        .topbar {
             position: relative;
-
             z-index: 2;
-
-            display: flex;
-
-            width: 100%;
-            height: 100%;
-
-            padding: 0 10px;
-
-            gap: 5px;
-
+            display: grid;
+            grid-template-columns: minmax(188px, auto) minmax(0, 1fr) auto;
             align-items: center;
-
+            gap: 10px;
+            width: 100%;
+            height: 50px;
+            padding: 7px 10px;
             -webkit-app-region: no-drag;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            height: 36px;
+            padding: 0 10px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            white-space: nowrap;
+        }
+
+        .brand-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .version-pill {
+            flex: 0 0 auto;
+            padding: 3px 7px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.16);
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .nav-strip {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            min-width: 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+        }
+
+        .nav-strip::-webkit-scrollbar {
+            display: none;
         }
 
         button {
-            background: transparent;
-
-            border: none;
-
-            color: var(--navbar-text-color, #cccccc);
-
-            font-size: 13px;
-            font-weight: 500;
-
-            padding: 8px 12px;
-
+            border: 0;
             border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+        }
 
-            transition:
-                all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-
+        .nav-link {
+            flex: 0 0 auto;
             height: 36px;
-
-            position: relative;
-
-            overflow: hidden;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* ================================= */
-        /* EFECTOS BOTONES */
-        /* ================================= */
-
-        button::after {
-            content: '';
-
-            position: absolute;
-
-            top: 0;
-            left: -150%;
-
-            width: 50%;
-            height: 100%;
-
-            background: linear-gradient(to right,
-                    rgba(255, 255, 255, 0) 0%,
-                    rgba(255, 255, 255, 0.25) 50%,
-                    rgba(255, 255, 255, 0) 100%);
-
-            transform: skewX(-25deg);
-
-            pointer-events: none;
-        }
-
-        button:hover {
-            background-color: #59c4e7;
-            color: #ffffff;
-
-            box-shadow:
-                0 0 12px rgba(0, 120, 212, 0.3);
-
-            transform:
-                translateY(-1px) scale(1.02);
-        }
-
-        button:hover::after {
-            left: 150%;
-
-            transition:
-                left 0.6s cubic-bezier(0.25,
-                    0.8,
-                    0.25,
-                    1);
-        }
-
-        /* ================================= */
-        /* BOTÓN ACTIVO */
-        /* ================================= */
-
-        button.active {
-            background: #17343d;
-
-            background-size: 300% 300%;
-
-            animation:
-                activeGradient 4s ease infinite;
-
-            color: var(--active-button-text-color, #ffffff);
-
-            box-shadow:
-                0 4px 14px rgba(0, 120, 212, 0.4);
-
+            padding: 0 11px;
+            background: transparent;
+            color: var(--navbar-text-color);
+            font-size: 13px;
             font-weight: 600;
-        }
-
-       
-
-        .spacer {
-            flex-grow: 1;
-        }
-
-        .version-badge {
-            color: var(--navbar-text-color, #cccccc);
-            font-size: 12px;
-            font-weight: 600;
-            height: 28px;
-            padding: 5px 9px;
-            border-radius: 6px;
-            background: rgba(0, 0, 0, 0.18);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            display: flex;
-            align-items: center;
             white-space: nowrap;
-            -webkit-app-region: no-drag;
         }
 
-        .reload-btn {
-            background-color: #c3d8de;
-            box-shadow:
-                0 0 10px rgba(255, 255, 255, 0.1);
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.16);
         }
 
-        .reload-btn:hover {
-            background-color: #444;
+        .nav-link.active {
+            background: rgba(0, 0, 0, 0.44);
+            color: var(--active-button-text-color);
+            box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.8);
+        }
 
-            box-shadow:
-                0 0 10px rgba(255, 255, 255, 0.1);
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-btn {
+            height: 36px;
+            min-width: 36px;
+            padding: 0 11px;
+            background: rgba(0, 0, 0, 0.22);
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 0, 0, 0.36);
         }
 
         .support-btn {
-            background-color:
-                #92387c;
-
-            border:
-                1px solid rgba(0, 120, 212, 0.4);
-
-            color: #ffffff;
+            background: #92387c;
         }
 
         .support-btn:hover {
-            background-color: #7c9238;
-
-            color: #ffffff;
-
-            box-shadow:
-                0 0 14px rgba(0, 120, 212, 0.6);
+            background: #7c9238;
         }
 
-        /* ================================= */
-        /* ANIMACIONES */
-        /* ================================= */
-
-        @keyframes activeGradient {
-
-            0% {
-                background-position: 0% 50%;
-            }
-
-            50% {
-                background-position: 100% 50%;
-            }
-
-            100% {
-                background-position: 0% 50%;
-            }
-        }
-
-        @keyframes pulseDot {
-
-            0%,
-            100% {
-                transform: scale(1);
-                opacity: 0.7;
-            }
-
-            50% {
-                transform: scale(1.5);
-                opacity: 1;
-            }
+        .reload-btn {
+            padding: 0;
+            font-size: 19px;
+            line-height: 1;
         }
     </style>
 </head>
 
 <body>
-
-    <!-- Región draggable -->
     <div class="drag-region"></div>
 
-    <div class="nav-container">
+    <div class="topbar">
+        <div class="brand" title="Recursos Digitales SEA">
+            <span class="brand-name">Recursos Digitales SEA</span>
+            <span id="version-badge" class="version-pill">v...</span>
+        </div>
 
-        <button onclick="navigate('https://sistemaestatalanticorrupcion.guanajuato.gob.mx/', this)">
-            SEA Guanajuato
-        </button>
+        <nav id="nav-strip" class="nav-strip" aria-label="Aplicaciones SEA"></nav>
 
-        <button onclick="navigate('https://sistemaestatalanticorrupcion.guanajuato.gob.mx/mesa-de-ayuda/', this)">
-            Mesa de Ayuda SEA
-        </button>
-
-        <button onclick="navigate('https://seseaguanajuato.org/', this)">
-            SESEA Guanajuato
-        </button>
-
-        <button onclick="navigate('https://publico.seseaguanajuato.org/', this)">
-            Portal Público
-        </button>
-
-        <button onclick="navigate('https://plataformadigital.guanajuato.gob.mx/', this)" class="active">
-
-            Plataforma Digital
-        </button>
-
-        <button onclick="navigate('https://intranet.seseaguanajuato.org/', this)">
-            Intranet SESEA
-        </button>
-
-        
-
-        <div class="spacer"></div>
-        <div id="version-badge" class="version-badge">v...</div>
-        <button class="support-btn" onclick="openTiSupport()">
-            Soporte TI
-        </button>
-        <button class="reload-btn" onclick="reloadView()">
-
-            🔄
-        </button>
-
+        <div class="actions">
+            <button id="support-button" class="action-btn support-btn" type="button">
+                Soporte TI
+            </button>
+            <button id="reload-button" class="action-btn reload-btn" type="button" aria-label="Recargar página" title="Recargar página">
+                ↻
+            </button>
+        </div>
     </div>
 
     <script>
-
-        function navigate(url, btn) {
-
-            document
-                .querySelectorAll('button')
-                .forEach(b => b.classList.remove('active'));
-
-            if (btn) {
-                btn.classList.add('active');
+        const NAV_ITEMS = [
+            {
+                label: 'SEA Guanajuato',
+                url: 'https://sistemaestatalanticorrupcion.guanajuato.gob.mx/'
+            },
+            {
+                label: 'Mesa de Ayuda SEA',
+                url: 'https://sistemaestatalanticorrupcion.guanajuato.gob.mx/mesa-de-ayuda/'
+            },
+            {
+                label: 'SESEA Guanajuato',
+                url: 'https://seseaguanajuato.org/'
+            },
+            {
+                label: 'Portal Público',
+                url: 'https://publico.seseaguanajuato.org/'
+            },
+            {
+                label: 'Plataforma Digital',
+                url: 'https://plataformadigital.guanajuato.gob.mx/'
+            },
+            {
+                label: 'Intranet SESEA',
+                url: 'https://intranet.seseaguanajuato.org/'
             }
+        ];
 
-            window.api.navigate(url);
-        }
-
-        function reloadView() {
-            window.api.reload();
-        }
-
-        function openTiSupport() {
-            window.api.openTiSupport();
-        }
-
-        window.api.onNavbarThemeColor(color => {
-            if (!color) return;
-            document.body.style.backgroundColor = color;
-        });
-
-        /* ================================= */
-        /* BOTÓN ACTIVO */
-        /* ================================= */
+        const navStrip = document.getElementById('nav-strip');
 
         const parseColor = (value) => {
             if (!value || typeof value !== 'string') return null;
@@ -392,41 +257,65 @@
             return lum > 0.55 ? '#111111' : '#ffffff';
         };
 
-        const contrastRatio = (bg, fg) => {
-            const rgbBg = parseColor(bg);
-            const rgbFg = parseColor(fg);
-            if (!rgbBg || !rgbFg) return 0;
-
-            const luminance = (rgb) => {
-                const normalize = (value) => {
-                    const channel = value / 255;
-                    return channel <= 0.03928
-                        ? channel / 12.92
-                        : Math.pow((channel + 0.055) / 1.055, 2.4);
-                };
-                return 0.2126 * normalize(rgb.r) + 0.7152 * normalize(rgb.g) + 0.0722 * normalize(rgb.b);
-            };
-
-            const L1 = luminance(rgbBg);
-            const L2 = luminance(rgbFg);
-            return (Math.max(L1, L2) + 0.05) / (Math.min(L1, L2) + 0.05);
-        };
-
         const updateButtonTextColors = () => {
             const navbarBg = document.body.style.backgroundColor || window.getComputedStyle(document.body).backgroundColor;
             const baseText = contrastColor(navbarBg);
             document.documentElement.style.setProperty('--navbar-text-color', baseText);
+            document.documentElement.style.setProperty('--active-button-text-color', '#ffffff');
+        };
 
-            const activeButton = document.querySelector('button.active');
-            if (activeButton) {
-                const activeBg = window.getComputedStyle(activeButton).backgroundColor;
-                let activeText = contrastColor(activeBg || navbarBg);
-                if (contrastRatio(activeBg || navbarBg, activeText) < 4.5) {
-                    activeText = contrastColor(navbarBg);
+        const setActiveByUrl = (url) => {
+            let bestMatch = null;
+            let longestLength = 0;
+
+            document.querySelectorAll('.nav-link').forEach(button => {
+                button.classList.remove('active');
+                const buttonUrl = button.dataset.url;
+
+                if (url && url.startsWith(buttonUrl) && buttonUrl.length > longestLength) {
+                    bestMatch = button;
+                    longestLength = buttonUrl.length;
                 }
-                document.documentElement.style.setProperty('--active-button-text-color', activeText);
+            });
+
+            if (bestMatch) {
+                bestMatch.classList.add('active');
+                bestMatch.scrollIntoView({ inline: 'nearest', block: 'nearest' });
             }
         };
+
+        const navigate = (url) => {
+            setActiveByUrl(url);
+            window.api.navigate(url);
+        };
+
+        const reloadView = () => {
+            window.api.reload();
+        };
+
+        const openTiSupport = () => {
+            window.api.openTiSupport();
+        };
+
+        const renderNavigation = () => {
+            navStrip.innerHTML = '';
+
+            NAV_ITEMS.forEach(item => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'nav-link';
+                button.textContent = item.label;
+                button.title = item.label;
+                button.dataset.url = item.url;
+                button.addEventListener('click', () => navigate(item.url));
+                navStrip.appendChild(button);
+            });
+        };
+
+        renderNavigation();
+
+        document.getElementById('support-button').addEventListener('click', openTiSupport);
+        document.getElementById('reload-button').addEventListener('click', reloadView);
 
         window.api.onNavbarThemeColor(color => {
             if (!color) return;
@@ -435,47 +324,7 @@
         });
 
         window.api.getLastUrl().then(url => {
-
-            if (!url) return;
-
-            let bestMatch = null;
-
-            let longestLength = 0;
-
-            document
-                .querySelectorAll('button')
-                .forEach(b => {
-
-                    b.classList.remove('active');
-
-                    const onclickAttr =
-                        b.getAttribute('onclick');
-
-                    if (!onclickAttr) return;
-
-                    const match =
-                        onclickAttr.match(
-                            /navigate\('([^']+)'/
-                        );
-
-                    if (match && match[1]) {
-
-                        const btnUrl = match[1];
-
-                        if (
-                            url.startsWith(btnUrl) &&
-                            btnUrl.length > longestLength
-                        ) {
-                            bestMatch = b;
-                            longestLength = btnUrl.length;
-                        }
-                    }
-                });
-
-            if (bestMatch) {
-                bestMatch.classList.add('active');
-            }
-
+            setActiveByUrl(url);
             updateButtonTextColors();
         });
 
@@ -484,9 +333,7 @@
             document.title = `Recursos Digitales SEA v${version}`;
             document.getElementById('version-badge').textContent = `v${version}`;
         });
-
     </script>
-
 </body>
 
 </html>
