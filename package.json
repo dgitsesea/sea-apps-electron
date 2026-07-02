@@ -1,7 +1,7 @@
 {
   "name": "sistema_de_aplicaciones_sesea",
-  "version": "5.5.0",
-  "description": "Sistema de Aplicaciones SESEA",
+  "version": "5.5.1",
+  "description": "Recursos Digitales SEA",
   "repository": {
     "type": "git",
     "url": "https://github.com/dgitsesea/sea-apps-electron.git"
@@ -21,8 +21,8 @@
   },
   "build": {
     "appId": "com.sea.dgitsuite",
-    "productName": "Sistema de Aplicaciones SESEA",
-    "copyright": "Copyright © 2025 SEA Guanajuato",
+    "productName": "Recursos Digitales SEA",
+    "copyright": "Copyright © 2026 SEA Guanajuato",
     "compression": "maximum",
     "asar": true,
     "publish": [
