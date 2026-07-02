@@ -352,38 +352,6 @@ async function createWindow() {
     });
 
     mainView.webContents.on('did-finish-load', () => {
-        const version = app.getVersion();
-
-        mainView.webContents.executeJavaScript(`
-            (function () {
-                const existing = document.getElementById('__app-version-badge__');
-                if (existing) existing.remove();
-
-                const badge = document.createElement('div');
-                badge.id = '__app-version-badge__';
-                badge.innerText = 'v${version}';
-                badge.style.cssText = [
-                    'position: fixed',
-                    'bottom: 10px',
-                    'right: 14px',
-                    'z-index: 2147483647',
-                    'background: rgba(0, 0, 0, 0.55)',
-                    'color: #fff',
-                    'font-size: 11px',
-                    'font-family: monospace',
-                    'padding: 3px 8px',
-                    'border-radius: 20px',
-                    'pointer-events: none',
-                    'user-select: none',
-                    'backdrop-filter: blur(4px)',
-                    '-webkit-backdrop-filter: blur(4px)',
-                    'letter-spacing: 0.5px',
-                    'opacity: 0.75'
-                ].join(';');
-                document.body.appendChild(badge);
-            })();
-        `).catch(() => { });
-
         updateNavbarThemeColor();
     });
 
