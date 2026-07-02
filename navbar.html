@@ -307,7 +307,16 @@
 
         const menuBar = document.getElementById('menu-bar');
         const activePageLabel = document.getElementById('active-page-label');
+        const versionBadge = document.getElementById('version-badge');
         let activeUrl = '';
+
+        const setAppVersion = (version) => {
+            if (!version) return;
+            document.title = `Recursos Digitales SEA v${version}`;
+            versionBadge.textContent = `v${version}`;
+        };
+
+        setAppVersion(new URLSearchParams(window.location.search).get('version'));
 
         const SYSTEM_LABELS = [
             {
@@ -466,11 +475,7 @@
             setActiveByUrl(state && state.url);
         });
 
-        window.api.getAppVersion().then(version => {
-            if (!version) return;
-            document.title = `Recursos Digitales SEA v${version}`;
-            document.getElementById('version-badge').textContent = `v${version}`;
-        });
+        window.api.getAppVersion().then(setAppVersion);
 
         window.api.onUpdateStatus(showUpdateStatus);
     </script>

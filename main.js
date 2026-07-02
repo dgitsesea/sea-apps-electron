@@ -253,7 +253,11 @@ async function createWindow() {
     });
 
     Menu.setApplicationMenu(null);
-    mainWindow.loadFile('navbar.html');
+    mainWindow.loadFile('navbar.html', {
+        query: {
+            version: app.getVersion()
+        }
+    });
 
     mainView = new WebContentsView({
         webPreferences: {
