@@ -34,7 +34,8 @@ const ALLOWED_ORIGINS = [
     'https://devlogin.seseaguanajuato.org',
     'https://mesadeayuda.seseaguanajuato.org',
     'https://devsireg.seseaguanajuato.org',
-    'https://sireg.seseaguanajuato.org'
+    'https://sireg.seseaguanajuato.org',
+    'https://serviciosdigitalessea.guanajuato.gob.mx/declaranet/'
 ];
 
 const ALLOWED_MAILTO_RECIPIENTS = [
