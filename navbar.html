@@ -7,8 +7,15 @@
 
     <style>
         :root {
-            --navbar-text-color: #ffffff;
-            --active-button-text-color: #ffffff;
+            --topbar-bg: #181818;
+            --topbar-border: #2b2b2b;
+            --topbar-text: #cccccc;
+            --topbar-muted: #8a8a8a;
+            --topbar-hover: #2a2d2e;
+            --topbar-active: #37373d;
+            --menu-bg: #252526;
+            --menu-border: #3c3c3c;
+            --menu-shadow: rgba(0, 0, 0, 0.45);
         }
 
         * {
@@ -17,20 +24,18 @@
 
         html,
         body {
-            margin: 0;
             width: 100%;
             height: 50px;
+            margin: 0;
             overflow: hidden;
             user-select: none;
             -webkit-user-select: none;
         }
 
         body {
-            background-color: #387c92;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.28);
-            color: var(--navbar-text-color);
+            background: var(--topbar-bg);
+            color: var(--topbar-text);
             font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            transition: background-color 0.25s ease;
         }
 
         .drag-region {
@@ -45,12 +50,13 @@
             position: relative;
             z-index: 2;
             display: grid;
-            grid-template-columns: minmax(188px, auto) minmax(0, 1fr) auto;
+            grid-template-columns: auto auto minmax(180px, 1fr) auto;
             align-items: center;
             gap: 10px;
             width: 100%;
             height: 50px;
-            padding: 7px 10px;
+            padding: 0 8px;
+            border-bottom: 1px solid var(--topbar-border);
             -webkit-app-region: no-drag;
         }
 
@@ -59,130 +65,218 @@
             align-items: center;
             gap: 8px;
             min-width: 0;
-            height: 36px;
-            padding: 0 10px;
-            border-radius: 6px;
-            background: rgba(0, 0, 0, 0.16);
-            border: 1px solid rgba(255, 255, 255, 0.16);
+            height: 34px;
+            padding: 0 7px;
             white-space: nowrap;
         }
 
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 5px;
+            background: #007acc;
+            color: #ffffff;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
         .brand-name {
+            max-width: 175px;
             overflow: hidden;
             text-overflow: ellipsis;
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 600;
+            color: #f2f2f2;
         }
 
         .version-pill {
             flex: 0 0 auto;
-            padding: 3px 7px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.16);
+            color: var(--topbar-muted);
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 600;
         }
 
-        .nav-strip {
+        .menu-bar {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 2px;
             min-width: 0;
-            overflow-x: auto;
-            overflow-y: hidden;
-            scrollbar-width: none;
-        }
-
-        .nav-strip::-webkit-scrollbar {
-            display: none;
         }
 
         button {
             border: 0;
-            border-radius: 6px;
             cursor: pointer;
             font-family: inherit;
-            transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
         }
 
-        .nav-link {
-            flex: 0 0 auto;
-            height: 36px;
-            padding: 0 11px;
+        .menu-trigger,
+        .icon-button {
+            height: 32px;
+            border-radius: 5px;
             background: transparent;
-            color: var(--navbar-text-color);
+            color: var(--topbar-text);
+            font-size: 13px;
+        }
+
+        .menu-trigger {
+            padding: 0 10px;
+        }
+
+        .menu-trigger:hover,
+        .menu-trigger.open,
+        .icon-button:hover {
+            background: var(--topbar-hover);
+            color: #ffffff;
+        }
+
+        .command-pill {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+            height: 32px;
+            padding: 0 12px;
+            border: 1px solid #3c3c3c;
+            border-radius: 7px;
+            background: #1f1f1f;
+            color: var(--topbar-text);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+
+        .command-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
             font-size: 13px;
             font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .nav-link:hover {
-            background: rgba(255, 255, 255, 0.16);
-        }
-
-        .nav-link.active {
-            background: rgba(0, 0, 0, 0.44);
-            color: var(--active-button-text-color);
-            box-shadow: inset 0 -2px 0 rgba(255, 255, 255, 0.8);
         }
 
         .actions {
             display: flex;
             align-items: center;
-            gap: 6px;
-        }
-
-        .action-btn {
-            height: 36px;
-            min-width: 36px;
-            padding: 0 11px;
-            background: rgba(0, 0, 0, 0.22);
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .action-btn:hover {
-            background: rgba(0, 0, 0, 0.36);
-        }
-
-        .support-btn {
-            background: #92387c;
-        }
-
-        .support-btn:hover {
-            background: #7c9238;
-        }
-
-        .update-btn {
-            background: rgba(255, 255, 255, 0.18);
-        }
-
-        .update-btn.checking {
-            cursor: progress;
-            opacity: 0.78;
-        }
-
-        .reload-btn {
-            padding: 0;
-            font-size: 19px;
-            line-height: 1;
+            gap: 5px;
+            min-width: 0;
         }
 
         .update-status {
-            max-width: 230px;
+            max-width: 250px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            color: var(--navbar-text-color);
+            color: var(--topbar-muted);
             font-size: 12px;
-            font-weight: 600;
             opacity: 0;
-            transition: opacity 0.18s ease;
+            transition: opacity 0.16s ease;
         }
 
         .update-status.visible {
-            opacity: 0.92;
+            opacity: 1;
+        }
+
+        .icon-button {
+            display: grid;
+            place-items: center;
+            width: 32px;
+            min-width: 32px;
+            padding: 0;
+            font-size: 16px;
+        }
+
+        .support-button {
+            width: auto;
+            padding: 0 9px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .dropdown-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 44px;
+            min-width: 230px;
+            padding: 5px;
+            border: 1px solid var(--menu-border);
+            border-radius: 6px;
+            background: var(--menu-bg);
+            box-shadow: 0 12px 30px var(--menu-shadow);
+            pointer-events: auto;
+        }
+
+        .dropdown-menu[hidden] {
+            display: none;
+        }
+
+        .menu-item {
+            display: grid;
+            grid-template-columns: 18px minmax(0, 1fr);
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            min-height: 30px;
+            padding: 5px 9px;
+            border-radius: 4px;
+            background: transparent;
+            color: var(--topbar-text);
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .menu-item:hover,
+        .menu-item:focus {
+            outline: 0;
+            background: #04395e;
+            color: #ffffff;
+        }
+
+        .menu-item.active {
+            background: var(--topbar-active);
+            color: #ffffff;
+        }
+
+        .menu-item-check {
+            color: #89d185;
+            font-weight: 800;
+        }
+
+        .menu-separator {
+            height: 1px;
+            margin: 5px 6px;
+            background: var(--menu-border);
+        }
+
+        @media (max-width: 900px) {
+            .topbar {
+                grid-template-columns: auto auto minmax(120px, 1fr) auto;
+                gap: 6px;
+            }
+
+            .brand-name {
+                display: none;
+            }
+
+            .version-pill {
+                display: none;
+            }
+
+            .menu-trigger {
+                padding: 0 7px;
+            }
+
+            .update-status {
+                display: none;
+            }
+
+            .support-button {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -192,150 +286,136 @@
 
     <div class="topbar">
         <div class="brand" title="Recursos Digitales SEA">
+            <span class="brand-mark">R</span>
             <span class="brand-name">Recursos Digitales SEA</span>
             <span id="version-badge" class="version-pill">v...</span>
         </div>
 
-        <nav id="nav-strip" class="nav-strip" aria-label="Aplicaciones SEA"></nav>
+        <nav id="menu-bar" class="menu-bar" aria-label="Menú principal"></nav>
+
+        <div class="command-pill" title="Página actual">
+            <span id="active-page-label" class="command-label">Plataforma Digital</span>
+        </div>
 
         <div class="actions">
             <span id="update-status" class="update-status" aria-live="polite"></span>
-            <button id="update-button" class="action-btn update-btn" type="button" title="Buscar actualizaciones">
-                Buscar actualización
-            </button>
-            <button id="support-button" class="action-btn support-btn" type="button">
-                Soporte TI
-            </button>
-            <button id="reload-button" class="action-btn reload-btn" type="button" aria-label="Recargar página" title="Recargar página">
-                ↻
-            </button>
+            <button id="support-button" class="icon-button support-button" type="button" title="Soporte TI">Soporte TI</button>
+            <button id="reload-button" class="icon-button" type="button" title="Recargar página" aria-label="Recargar página">↻</button>
         </div>
     </div>
 
+    <div id="dropdown-layer" class="dropdown-layer">
+        <div id="dropdown-menu" class="dropdown-menu" hidden></div>
+    </div>
+
     <script>
-        const NAV_ITEMS = [
+        const MENU_GROUPS = [
             {
-                label: 'SEA Guanajuato',
-                url: 'https://sistemaestatalanticorrupcion.guanajuato.gob.mx/'
+                label: 'Recursos',
+                items: [
+                    {
+                        type: 'navigate',
+                        label: 'SEA Guanajuato',
+                        url: 'https://sistemaestatalanticorrupcion.guanajuato.gob.mx/'
+                    },
+                    {
+                        type: 'navigate',
+                        label: 'SESEA Guanajuato',
+                        url: 'https://seseaguanajuato.org/'
+                    },
+                    {
+                        type: 'navigate',
+                        label: 'Portal Público',
+                        url: 'https://publico.seseaguanajuato.org/'
+                    }
+                ]
             },
             {
-                label: 'Mesa de Ayuda SEA',
-                url: 'https://sistemaestatalanticorrupcion.guanajuato.gob.mx/mesa-de-ayuda/'
+                label: 'Sistemas',
+                items: [
+                    {
+                        type: 'navigate',
+                        label: 'Plataforma Digital',
+                        url: 'https://plataformadigital.guanajuato.gob.mx/'
+                    },
+                    {
+                        type: 'navigate',
+                        label: 'Intranet SESEA',
+                        url: 'https://intranet.seseaguanajuato.org/'
+                    }
+                ]
             },
             {
-                label: 'SESEA Guanajuato',
-                url: 'https://seseaguanajuato.org/'
+                label: 'Soporte',
+                items: [
+                    {
+                        type: 'navigate',
+                        label: 'Mesa de Ayuda SEA',
+                        url: 'https://sistemaestatalanticorrupcion.guanajuato.gob.mx/mesa-de-ayuda/'
+                    },
+                    {
+                        type: 'separator'
+                    },
+                    {
+                        type: 'action',
+                        label: 'Abrir Soporte TI',
+                        action: 'open-support'
+                    }
+                ]
             },
             {
-                label: 'Portal Público',
-                url: 'https://publico.seseaguanajuato.org/'
-            },
-            {
-                label: 'Plataforma Digital',
-                url: 'https://plataformadigital.guanajuato.gob.mx/'
-            },
-            {
-                label: 'Intranet SESEA',
-                url: 'https://intranet.seseaguanajuato.org/'
+                label: 'Actualización',
+                items: [
+                    {
+                        type: 'action',
+                        label: 'Buscar actualización',
+                        action: 'check-updates'
+                    }
+                ]
             }
         ];
 
-        const navStrip = document.getElementById('nav-strip');
+        const menuBar = document.getElementById('menu-bar');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const activePageLabel = document.getElementById('active-page-label');
+        let activeUrl = '';
+        let openMenuIndex = null;
 
-        const parseColor = (value) => {
-            if (!value || typeof value !== 'string') return null;
-            value = value.trim();
+        const allNavigationItems = () => MENU_GROUPS
+            .flatMap(group => group.items)
+            .filter(item => item.type === 'navigate');
 
-            const rgbMatch = value.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
-            if (rgbMatch) {
-                return {
-                    r: Number(rgbMatch[1]),
-                    g: Number(rgbMatch[2]),
-                    b: Number(rgbMatch[3])
-                };
-            }
-
-            const hexMatch = value.match(/^#([a-f0-9]{3}|[a-f0-9]{6})$/i);
-            if (hexMatch) {
-                let hex = hexMatch[1];
-                if (hex.length === 3) {
-                    hex = hex.split('').map(c => c + c).join('');
-                }
-                return {
-                    r: parseInt(hex.substr(0, 2), 16),
-                    g: parseInt(hex.substr(2, 2), 16),
-                    b: parseInt(hex.substr(4, 2), 16)
-                };
-            }
-
-            return null;
-        };
-
-        const contrastColor = (background) => {
-            const rgb = parseColor(background);
-            if (!rgb) return '#ffffff';
-
-            const normalize = (value) => {
-                const channel = value / 255;
-                return channel <= 0.03928
-                    ? channel / 12.92
-                    : Math.pow((channel + 0.055) / 1.055, 2.4);
-            };
-
-            const lum = 0.2126 * normalize(rgb.r) + 0.7152 * normalize(rgb.g) + 0.0722 * normalize(rgb.b);
-            return lum > 0.55 ? '#111111' : '#ffffff';
-        };
-
-        const updateButtonTextColors = () => {
-            const navbarBg = document.body.style.backgroundColor || window.getComputedStyle(document.body).backgroundColor;
-            const baseText = contrastColor(navbarBg);
-            document.documentElement.style.setProperty('--navbar-text-color', baseText);
-            document.documentElement.style.setProperty('--active-button-text-color', '#ffffff');
-        };
-
-        const setActiveByUrl = (url) => {
+        const findBestNavItem = (url) => {
             let bestMatch = null;
             let longestLength = 0;
 
-            document.querySelectorAll('.nav-link').forEach(button => {
-                button.classList.remove('active');
-                const buttonUrl = button.dataset.url;
-
-                if (url && url.startsWith(buttonUrl) && buttonUrl.length > longestLength) {
-                    bestMatch = button;
-                    longestLength = buttonUrl.length;
+            allNavigationItems().forEach(item => {
+                if (url && url.startsWith(item.url) && item.url.length > longestLength) {
+                    bestMatch = item;
+                    longestLength = item.url.length;
                 }
             });
 
-            if (bestMatch) {
-                bestMatch.classList.add('active');
-                bestMatch.scrollIntoView({ inline: 'nearest', block: 'nearest' });
-            }
+            return bestMatch;
         };
 
-        const navigate = (url) => {
-            setActiveByUrl(url);
-            window.api.navigate(url);
-        };
-
-        const reloadView = () => {
-            window.api.reload();
-        };
-
-        const openTiSupport = () => {
-            window.api.openTiSupport();
+        const closeMenu = () => {
+            openMenuIndex = null;
+            dropdownMenu.hidden = true;
+            dropdownMenu.innerHTML = '';
+            document.querySelectorAll('.menu-trigger').forEach(button => {
+                button.classList.remove('open');
+                button.setAttribute('aria-expanded', 'false');
+            });
         };
 
         const showUpdateStatus = (status) => {
             const updateStatus = document.getElementById('update-status');
-            const updateButton = document.getElementById('update-button');
 
             if (!status || !status.message) return;
 
             updateStatus.textContent = status.message;
             updateStatus.classList.add('visible');
-            updateButton.classList.toggle('checking', status.status === 'checking');
-            updateButton.disabled = status.status === 'checking';
 
             if (!['checking', 'downloading'].includes(status.status)) {
                 setTimeout(() => {
@@ -345,9 +425,6 @@
         };
 
         const checkForUpdates = async () => {
-            const updateButton = document.getElementById('update-button');
-            updateButton.disabled = true;
-            updateButton.classList.add('checking');
             showUpdateStatus({
                 status: 'checking',
                 message: 'Buscando actualizaciones...'
@@ -355,44 +432,127 @@
 
             const status = await window.api.checkForUpdates();
             showUpdateStatus(status);
+        };
 
-            if (status.status !== 'checking') {
-                updateButton.disabled = false;
-                updateButton.classList.remove('checking');
+        const runAction = (action) => {
+            if (action === 'open-support') {
+                window.api.openTiSupport();
+                return;
+            }
+
+            if (action === 'check-updates') {
+                checkForUpdates();
             }
         };
 
-        const renderNavigation = () => {
-            navStrip.innerHTML = '';
+        const navigate = (item) => {
+            activeUrl = item.url;
+            activePageLabel.textContent = item.label;
+            window.api.navigate(item.url);
+        };
 
-            NAV_ITEMS.forEach(item => {
+        const renderDropdown = (groupIndex, triggerButton) => {
+            const group = MENU_GROUPS[groupIndex];
+            dropdownMenu.innerHTML = '';
+
+            group.items.forEach(item => {
+                if (item.type === 'separator') {
+                    const separator = document.createElement('div');
+                    separator.className = 'menu-separator';
+                    dropdownMenu.appendChild(separator);
+                    return;
+                }
+
                 const button = document.createElement('button');
                 button.type = 'button';
-                button.className = 'nav-link';
-                button.textContent = item.label;
-                button.title = item.label;
-                button.dataset.url = item.url;
-                button.addEventListener('click', () => navigate(item.url));
-                navStrip.appendChild(button);
+                button.className = 'menu-item';
+
+                const isActive = item.type === 'navigate'
+                    && findBestNavItem(activeUrl) === item;
+                if (isActive) button.classList.add('active');
+
+                const check = document.createElement('span');
+                check.className = 'menu-item-check';
+                check.textContent = isActive ? '✓' : '';
+
+                const label = document.createElement('span');
+                label.textContent = item.label;
+
+                button.append(check, label);
+                button.addEventListener('click', () => {
+                    closeMenu();
+                    if (item.type === 'navigate') {
+                        navigate(item);
+                    } else {
+                        runAction(item.action);
+                    }
+                });
+
+                dropdownMenu.appendChild(button);
+            });
+
+            const bounds = triggerButton.getBoundingClientRect();
+            dropdownMenu.style.left = `${Math.max(8, Math.min(bounds.left, window.innerWidth - 250))}px`;
+            dropdownMenu.hidden = false;
+            openMenuIndex = groupIndex;
+            triggerButton.classList.add('open');
+            triggerButton.setAttribute('aria-expanded', 'true');
+        };
+
+        const toggleMenu = (groupIndex, triggerButton) => {
+            const isSameMenu = openMenuIndex === groupIndex;
+            closeMenu();
+            if (!isSameMenu) {
+                renderDropdown(groupIndex, triggerButton);
+            }
+        };
+
+        const renderMenuBar = () => {
+            menuBar.innerHTML = '';
+
+            MENU_GROUPS.forEach((group, groupIndex) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'menu-trigger';
+                button.textContent = group.label;
+                button.setAttribute('aria-haspopup', 'menu');
+                button.setAttribute('aria-expanded', 'false');
+                button.addEventListener('click', event => {
+                    event.stopPropagation();
+                    toggleMenu(groupIndex, button);
+                });
+                menuBar.appendChild(button);
             });
         };
 
-        renderNavigation();
+        const setActiveByUrl = (url) => {
+            activeUrl = url || '';
+            const activeItem = findBestNavItem(activeUrl);
+            activePageLabel.textContent = activeItem ? activeItem.label : 'Página actual';
+        };
 
-        document.getElementById('update-button').addEventListener('click', checkForUpdates);
-        document.getElementById('support-button').addEventListener('click', openTiSupport);
-        document.getElementById('reload-button').addEventListener('click', reloadView);
+        renderMenuBar();
 
-        window.api.onNavbarThemeColor(color => {
-            if (!color) return;
-            document.body.style.backgroundColor = color;
-            updateButtonTextColors();
+        document.getElementById('support-button').addEventListener('click', () => {
+            window.api.openTiSupport();
+        });
+        document.getElementById('reload-button').addEventListener('click', () => {
+            window.api.reload();
         });
 
-        window.api.getLastUrl().then(url => {
-            setActiveByUrl(url);
-            updateButtonTextColors();
+        document.addEventListener('click', event => {
+            if (!dropdownMenu.hidden && !dropdownMenu.contains(event.target)) {
+                closeMenu();
+            }
         });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                closeMenu();
+            }
+        });
+
+        window.api.getLastUrl().then(setActiveByUrl);
 
         window.api.getAppVersion().then(version => {
             if (!version) return;
@@ -400,14 +560,7 @@
             document.getElementById('version-badge').textContent = `v${version}`;
         });
 
-        window.api.onUpdateStatus(status => {
-            showUpdateStatus(status);
-            if (status && status.status !== 'checking') {
-                const updateButton = document.getElementById('update-button');
-                updateButton.disabled = false;
-                updateButton.classList.remove('checking');
-            }
-        });
+        window.api.onUpdateStatus(showUpdateStatus);
     </script>
 </body>
 
