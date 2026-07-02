@@ -9,7 +9,8 @@ const {
     shell,
     Menu,
     WebContentsView,
-    ipcMain
+    ipcMain,
+    Notification
 } = require('electron');
 
 const { autoUpdater } = require('electron-updater');
@@ -22,7 +23,14 @@ autoUpdater.autoInstallOnAppQuit = false;
 
 log.info('Aplicación iniciada.');
 
+const APP_USER_MODEL_ID = 'com.sea.dgitsuite';
 const DEFAULT_URL = process.env.PAGINA_ABRIR || 'https://login.seseaguanajuato.org';
+const DEFAULT_UPDATE_CHECK_INTERVAL_MINUTES = 30;
+const MIN_UPDATE_CHECK_INTERVAL_MINUTES = 1;
+
+if (process.platform === 'win32') {
+    app.setAppUserModelId(APP_USER_MODEL_ID);
+}
 
 const ALLOWED_ORIGINS = [
     'https://sistemaestatalanticorrupcion.guanajuato.gob.mx',
@@ -48,8 +56,10 @@ let mainWindow;
 let mainView;
 let supportWindow = null;
 let manualUpdateCheckInProgress = false;
+let automaticUpdateCheckInProgress = false;
 let updateReadyToInstall = false;
 let updateInstallInProgress = false;
+let lastNativeUpdateNotificationVersion = null;
 let currentUrl = DEFAULT_URL;
 
 const APP_MENU_GROUPS = {
@@ -103,6 +113,16 @@ const getSafeAppUrl = (url, fallback = DEFAULT_URL) => {
     if (isAllowedUrl(url)) return url;
     if (isAllowedUrl(fallback)) return fallback;
     return 'https://plataformadigital.guanajuato.gob.mx/';
+};
+
+const getUpdateCheckIntervalMinutes = () => {
+    const configuredMinutes = Number(process.env.UPDATE_CHECK_INTERVAL_MINUTES);
+
+    if (!Number.isFinite(configuredMinutes) || configuredMinutes <= 0) {
+        return DEFAULT_UPDATE_CHECK_INTERVAL_MINUTES;
+    }
+
+    return Math.max(MIN_UPDATE_CHECK_INTERVAL_MINUTES, configuredMinutes);
 };
 
 const isAllowedExternalUrl = (url) => {
@@ -183,6 +203,58 @@ const sendNavigationState = (url) => {
     }
 };
 
+const focusMainWindow = () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+
+    if (mainWindow.isMinimized()) {
+        mainWindow.restore();
+    }
+
+    mainWindow.show();
+    mainWindow.focus();
+};
+
+const getNotificationIconPath = () => {
+    const iconPaths = [
+        path.join(__dirname, 'build', 'icon.png'),
+        path.join(__dirname, 'ico.ico')
+    ];
+
+    return iconPaths.find((iconPath) => fs.existsSync(iconPath));
+};
+
+const showNativeNotification = ({ title, body }) => {
+    if (!Notification.isSupported()) {
+        log.warn('Notificaciones nativas no soportadas en este sistema.');
+        return;
+    }
+
+    const icon = getNotificationIconPath();
+    const notification = new Notification({
+        title,
+        body,
+        silent: false,
+        ...(icon ? { icon } : {})
+    });
+
+    notification.on('click', focusMainWindow);
+    notification.show();
+};
+
+const showUpdateReadyNotification = (info) => {
+    const version = info && info.version ? info.version : 'disponible';
+
+    if (lastNativeUpdateNotificationVersion === version) return;
+    lastNativeUpdateNotificationVersion = version;
+
+    showNativeNotification({
+        title: 'Actualización lista',
+        body: info && info.version
+            ? `Recursos Digitales SEA v${info.version} ya se descargó. Reinicia para instalarla.`
+            : 'Recursos Digitales SEA tiene una actualización lista para instalar.'
+    });
+};
+
 const runDownloadedUpdateInstaller = () => {
     if (updateInstallInProgress) return true;
     if (!updateReadyToInstall) return false;
@@ -192,6 +264,30 @@ const runDownloadedUpdateInstaller = () => {
     log.info('Instalando actualización en modo silencioso...');
     autoUpdater.quitAndInstall(true, true);
     return true;
+};
+
+const checkForUpdatesAutomatically = async () => {
+    if (!app.isPackaged) return;
+
+    if (
+        manualUpdateCheckInProgress
+        || automaticUpdateCheckInProgress
+        || updateReadyToInstall
+        || updateInstallInProgress
+    ) {
+        log.info('Verificación automática de updates omitida: hay otra revisión o instalación en curso.');
+        return;
+    }
+
+    automaticUpdateCheckInProgress = true;
+
+    try {
+        log.info('Verificación automática de updates...');
+        await autoUpdater.checkForUpdates();
+    } catch (err) {
+        automaticUpdateCheckInProgress = false;
+        log.error(`Error en verificación automática de updates: ${err == null ? 'unknown' : err.message}`);
+    }
 };
 
 const clearDirectory = (directoryPath) => {
@@ -400,7 +496,7 @@ async function createWindow() {
             };
         }
 
-        if (manualUpdateCheckInProgress) {
+        if (manualUpdateCheckInProgress || automaticUpdateCheckInProgress) {
             return {
                 status: 'checking',
                 message: 'Ya se están buscando actualizaciones.'
@@ -615,13 +711,14 @@ app.whenReady().then(async () => {
     await createWindow();
 
     if (app.isPackaged) {
-        log.info('AplicaciÃ³n empaquetada. Verificando updates...');
-        autoUpdater.checkForUpdates();
+        const updateCheckIntervalMinutes = getUpdateCheckIntervalMinutes();
+        log.info(`Aplicación empaquetada. Verificando updates cada ${updateCheckIntervalMinutes} minutos...`);
+        checkForUpdatesAutomatically();
 
-        setInterval(() => {
-            log.info('VerificaciÃ³n automÃ¡tica de updates...');
-            autoUpdater.checkForUpdates();
-        }, 1000 * 60 * 30);
+        setInterval(
+            checkForUpdatesAutomatically,
+            updateCheckIntervalMinutes * 60 * 1000
+        );
     } else {
         log.info('Modo desarrollo. AutoUpdater desactivado.');
     }
@@ -674,15 +771,21 @@ autoUpdater.on('update-available', (info) => {
 });
 
 autoUpdater.on('update-not-available', () => {
+    const wasManualCheck = manualUpdateCheckInProgress;
+
     updateReadyToInstall = false;
     updateInstallInProgress = false;
     log.info('La aplicación está actualizada.');
     manualUpdateCheckInProgress = false;
-    sendUpdateStatus({
-        status: 'current',
-        message: 'Ya tienes la versión más reciente.',
-        canRestart: false
-    });
+    automaticUpdateCheckInProgress = false;
+
+    if (wasManualCheck) {
+        sendUpdateStatus({
+            status: 'current',
+            message: 'Ya tienes la versión más reciente.',
+            canRestart: false
+        });
+    }
 });
 
 autoUpdater.on('download-progress', (progress) => {
@@ -701,12 +804,14 @@ autoUpdater.on('download-progress', (progress) => {
 autoUpdater.on('update-downloaded', (info) => {
     log.info(`Actualización descargada: v${info.version}`);
     manualUpdateCheckInProgress = false;
+    automaticUpdateCheckInProgress = false;
     updateReadyToInstall = true;
     updateInstallInProgress = false;
     if (mainWindow) {
         mainWindow.setProgressBar(-1);
     }
     log.info('La actualización está lista para reiniciar e instalar.');
+    showUpdateReadyNotification(info);
     sendUpdateStatus({
         status: 'downloaded',
         message: `Actualización ${info.version} lista.`,
@@ -715,13 +820,19 @@ autoUpdater.on('update-downloaded', (info) => {
 });
 
 autoUpdater.on('error', (err) => {
+    const wasManualCheck = manualUpdateCheckInProgress;
+
     manualUpdateCheckInProgress = false;
+    automaticUpdateCheckInProgress = false;
     updateReadyToInstall = false;
     updateInstallInProgress = false;
     log.error(`Error en AutoUpdater: ${err == null ? 'unknown' : err.message}`);
-    sendUpdateStatus({
-        status: 'error',
-        message: 'No se pudieron buscar actualizaciones.',
-        canRestart: false
-    });
+
+    if (wasManualCheck) {
+        sendUpdateStatus({
+            status: 'error',
+            message: 'No se pudieron buscar actualizaciones.',
+            canRestart: false
+        });
+    }
 });

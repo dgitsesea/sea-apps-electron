@@ -17,6 +17,9 @@
 
 ## Actualizaciones automáticas
 
+- La app revisa actualizaciones al iniciar y después cada 30 minutos por defecto.
+- Para cambiar el intervalo, definir `UPDATE_CHECK_INTERVAL_MINUTES` con el número de minutos deseado.
+- Cuando una actualización termina de descargarse, la app muestra una notificación nativa del sistema y deja disponible el botón `Reiniciar y actualizar`.
 - Windows usa el instalador NSIS (`.exe`) y el archivo `latest.yml`.
 - macOS requiere publicar el `.dmg` para instalación manual y el `.zip` para actualización automática.
 - En macOS también debe publicarse `latest-mac.yml`; electron-builder lo genera cuando existe el target `zip`.
@@ -25,4 +28,3 @@
 ## Enlaces de descarga
 
 Para actualizar los enlaces de descarga de WordPress, usar los archivos generados en GitHub Releases.
-
