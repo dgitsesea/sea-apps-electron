@@ -477,8 +477,7 @@ async function createWindow() {
 
     const buildNavigationMenuItems = (items) => items.map((item) => ({
         label: item.label,
-        type: 'checkbox',
-        checked: currentUrl.startsWith(item.url),
+        type: 'normal',
         click: () => {
             currentUrl = item.url;
             loadAllowedUrl(item.url);

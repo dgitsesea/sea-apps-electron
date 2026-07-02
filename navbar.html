@@ -234,8 +234,8 @@
 
         <nav id="menu-bar" class="menu-bar" aria-label="Menú principal"></nav>
 
-        <div class="command-pill" title="Página actual">
-            <span id="active-page-label" class="command-label">Página actual</span>
+        <div class="command-pill" title="Sistema actual">
+            <span id="active-page-label" class="command-label">Sistema actual</span>
         </div>
 
         <div class="actions">
@@ -303,6 +303,49 @@
         const activePageLabel = document.getElementById('active-page-label');
         let activeUrl = '';
 
+        const SYSTEM_LABELS = [
+            {
+                label: 'Mesa de Ayuda PDE',
+                origin: 'https://mesadeayuda.seseaguanajuato.org'
+            },
+            {
+                label: 'Plataforma Digital',
+                origin: 'https://plataformadigital.guanajuato.gob.mx'
+            },
+            {
+                label: 'Intranet SESEA',
+                origin: 'https://intranet.seseaguanajuato.org'
+            },
+            {
+                label: 'Login SESEA',
+                origin: 'https://login.seseaguanajuato.org'
+            },
+            {
+                label: 'Login SESEA Dev',
+                origin: 'https://devlogin.seseaguanajuato.org'
+            },
+            {
+                label: 'SIREG',
+                origin: 'https://sireg.seseaguanajuato.org'
+            },
+            {
+                label: 'SIREG Dev',
+                origin: 'https://devsireg.seseaguanajuato.org'
+            },
+            {
+                label: 'SEA Guanajuato',
+                origin: 'https://sistemaestatalanticorrupcion.guanajuato.gob.mx'
+            },
+            {
+                label: 'SESEA Guanajuato',
+                origin: 'https://seseaguanajuato.org'
+            },
+            {
+                label: 'Portal Público',
+                origin: 'https://publico.seseaguanajuato.org'
+            }
+        ];
+
         const allNavigationItems = () => MENU_GROUPS
             .flatMap(group => group.items)
             .filter(item => item.url);
@@ -321,6 +364,21 @@
             return bestMatch;
         };
 
+        const getSystemLabel = (url) => {
+            const activeItem = findBestNavItem(url);
+            if (activeItem) return activeItem.label;
+
+            try {
+                const parsedUrl = new URL(url);
+                const system = SYSTEM_LABELS.find(item => item.origin === parsedUrl.origin);
+                if (system) return system.label;
+
+                return parsedUrl.hostname.replace(/^www\./, '');
+            } catch {
+                return 'Sistema actual';
+            }
+        };
+
         const setActiveMenuGroup = (activeItem) => {
             document.querySelectorAll('.menu-trigger').forEach(button => {
                 const group = MENU_GROUPS.find(item => item.id === button.dataset.groupId);
@@ -332,7 +390,7 @@
         const setActiveByUrl = (url) => {
             activeUrl = url || '';
             const activeItem = findBestNavItem(activeUrl);
-            activePageLabel.textContent = activeItem ? activeItem.label : 'Página actual';
+            activePageLabel.textContent = getSystemLabel(activeUrl);
             setActiveMenuGroup(activeItem);
         };
 
