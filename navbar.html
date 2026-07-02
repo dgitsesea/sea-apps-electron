@@ -196,6 +196,24 @@
             font-weight: 700;
         }
 
+        .restart-update-button {
+            display: none;
+            width: auto;
+            padding: 0 10px;
+            background: #0e639c;
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .restart-update-button.visible {
+            display: grid;
+        }
+
+        .restart-update-button:hover {
+            background: #1177bb;
+        }
+
         .dropdown-layer {
             position: fixed;
             inset: 0;
@@ -282,6 +300,10 @@
             .support-button {
                 display: none;
             }
+
+            .restart-update-button.visible {
+                display: grid;
+            }
         }
     </style>
 </head>
@@ -304,6 +326,9 @@
 
         <div class="actions">
             <span id="update-status" class="update-status" aria-live="polite"></span>
+            <button id="restart-update-button" class="icon-button restart-update-button" type="button" title="Reiniciar y actualizar">
+                Reiniciar y actualizar
+            </button>
             <button id="support-button" class="icon-button support-button" type="button" title="Soporte TI">Soporte TI</button>
             <button id="reload-button" class="icon-button" type="button" title="Recargar página" aria-label="Recargar página">↻</button>
         </div>
@@ -418,13 +443,15 @@
 
         const showUpdateStatus = (status) => {
             const updateStatus = document.getElementById('update-status');
+            const restartUpdateButton = document.getElementById('restart-update-button');
 
             if (!status || !status.message) return;
 
             updateStatus.textContent = status.message;
             updateStatus.classList.add('visible');
+            restartUpdateButton.classList.toggle('visible', Boolean(status.canRestart));
 
-            if (!['checking', 'downloading'].includes(status.status)) {
+            if (!['checking', 'downloading', 'downloaded'].includes(status.status)) {
                 setTimeout(() => {
                     updateStatus.classList.remove('visible');
                 }, 5000);
@@ -438,6 +465,11 @@
             });
 
             const status = await window.api.checkForUpdates();
+            showUpdateStatus(status);
+        };
+
+        const restartAndUpdate = async () => {
+            const status = await window.api.restartAndUpdate();
             showUpdateStatus(status);
         };
 
@@ -545,6 +577,7 @@
         document.getElementById('support-button').addEventListener('click', () => {
             window.api.openTiSupport();
         });
+        document.getElementById('restart-update-button').addEventListener('click', restartAndUpdate);
         document.getElementById('reload-button').addEventListener('click', () => {
             window.api.reload();
         });

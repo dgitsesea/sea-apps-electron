@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('api', {
     getLastUrl: () => ipcRenderer.invoke('get-last-url'),
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
     checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+    restartAndUpdate: () => ipcRenderer.invoke('restart-and-update'),
     openTiSupport: () => ipcRenderer.send('open-ti-support'),
     closeSupport: () => ipcRenderer.send('close-support'),
     openExternal: (url) => ipcRenderer.send('open-external', url),

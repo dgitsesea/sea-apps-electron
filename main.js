@@ -18,7 +18,7 @@ const log = require('electron-log');
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 autoUpdater.autoDownload = true;
-autoUpdater.autoInstallOnAppQuit = true;
+autoUpdater.autoInstallOnAppQuit = false;
 
 log.info('AplicaciÃ³n iniciada.');
 
@@ -48,6 +48,7 @@ let mainView;
 let supportWindow = null;
 let manualUpdateCheckInProgress = false;
 let navbarHeight = 50;
+let updateReadyToInstall = false;
 
 const getConfigPath = () => path.join(app.getPath('userData'), 'last-url.json');
 
@@ -381,6 +382,14 @@ async function createWindow() {
 
     ipcMain.removeHandler('check-for-updates');
     ipcMain.handle('check-for-updates', async () => {
+        if (updateReadyToInstall) {
+            return {
+                status: 'downloaded',
+                message: 'Actualización lista para instalar.',
+                canRestart: true
+            };
+        }
+
         if (!app.isPackaged) {
             return {
                 status: 'disabled',
@@ -415,6 +424,23 @@ async function createWindow() {
                 message: 'No se pudieron buscar actualizaciones.'
             };
         }
+    });
+
+    ipcMain.removeHandler('restart-and-update');
+    ipcMain.handle('restart-and-update', () => {
+        if (!updateReadyToInstall) {
+            return {
+                status: 'idle',
+                message: 'No hay una actualización lista para instalar.'
+            };
+        }
+
+        log.info('Reiniciando para instalar actualización...');
+        autoUpdater.quitAndInstall(false, true);
+        return {
+            status: 'restarting',
+            message: 'Reiniciando para actualizar...'
+        };
     });
 
     ipcMain.removeAllListeners('open-ti-support');
@@ -514,19 +540,23 @@ autoUpdater.on('checking-for-update', () => {
 });
 
 autoUpdater.on('update-available', (info) => {
+    updateReadyToInstall = false;
     log.info(`Actualización disponible: v${info.version}`);
     sendUpdateStatus({
         status: 'available',
-        message: `Actualización ${info.version} encontrada. Descargando...`
+        message: `Actualización ${info.version} encontrada. Descargando...`,
+        canRestart: false
     });
 });
 
 autoUpdater.on('update-not-available', () => {
+    updateReadyToInstall = false;
     log.info('La aplicación está actualizada.');
     manualUpdateCheckInProgress = false;
     sendUpdateStatus({
         status: 'current',
-        message: 'Ya tienes la versión más reciente.'
+        message: 'Ya tienes la versión más reciente.',
+        canRestart: false
     });
 });
 
@@ -538,28 +568,33 @@ autoUpdater.on('download-progress', (progress) => {
     }
     sendUpdateStatus({
         status: 'downloading',
-        message: `Descargando actualización: ${percent}%`
+        message: `Descargando actualización: ${percent}%`,
+        canRestart: false
     });
 });
 
 autoUpdater.on('update-downloaded', (info) => {
     log.info(`Actualización descargada: v${info.version}`);
     manualUpdateCheckInProgress = false;
+    updateReadyToInstall = true;
     if (mainWindow) {
         mainWindow.setProgressBar(-1);
     }
-    log.info('La actualización se instalará automáticamente al cerrar la aplicación.');
+    log.info('La actualización está lista para reiniciar e instalar.');
     sendUpdateStatus({
         status: 'downloaded',
-        message: `Actualización ${info.version} lista. Se instalará al cerrar.`
+        message: `Actualización ${info.version} lista.`,
+        canRestart: true
     });
 });
 
 autoUpdater.on('error', (err) => {
     manualUpdateCheckInProgress = false;
+    updateReadyToInstall = false;
     log.error(`Error en AutoUpdater: ${err == null ? 'unknown' : err.message}`);
     sendUpdateStatus({
         status: 'error',
-        message: 'No se pudieron buscar actualizaciones.'
+        message: 'No se pudieron buscar actualizaciones.',
+        canRestart: false
     });
 });
