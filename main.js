@@ -1,4 +1,4 @@
-require('dotenv').config();
+﻿require('dotenv').config();
 
 const path = require('path');
 const fs = require('fs');
@@ -20,7 +20,7 @@ autoUpdater.logger.transports.file.level = 'info';
 autoUpdater.autoDownload = true;
 autoUpdater.autoInstallOnAppQuit = true;
 
-log.info('Aplicación iniciada.');
+log.info('AplicaciÃ³n iniciada.');
 
 const DEFAULT_URL = process.env.PAGINA_ABRIR || 'https://plataformadigital.guanajuato.gob.mx/';
 
@@ -46,6 +46,7 @@ const ALLOWED_MAILTO_RECIPIENTS = [
 let mainWindow;
 let mainView;
 let supportWindow = null;
+let manualUpdateCheckInProgress = false;
 
 const getConfigPath = () => path.join(app.getPath('userData'), 'last-url.json');
 
@@ -87,7 +88,7 @@ const loadAllowedUrl = (url) => {
     if (!mainView || !mainView.webContents) return false;
 
     if (!isAllowedUrl(url)) {
-        log.warn(`Navegación bloqueada: ${url}`);
+        log.warn(`NavegaciÃ³n bloqueada: ${url}`);
         return false;
     }
 
@@ -124,6 +125,12 @@ const writeSavedConfig = (config) => {
         fs.writeFileSync(getConfigPath(), JSON.stringify(config));
     } catch (err) {
         log.error('Error guardando config', err);
+    }
+};
+
+const sendUpdateStatus = (status) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('update-status', status);
     }
 };
 
@@ -230,7 +237,7 @@ async function createWindow() {
 
     const saveUrl = (url) => {
         if (!isAllowedUrl(url)) {
-            log.warn(`No se guardó URL no permitida: ${url}`);
+            log.warn(`No se guardÃ³ URL no permitida: ${url}`);
             return;
         }
 
@@ -273,7 +280,7 @@ async function createWindow() {
                 mainWindow.webContents.send('navbar-theme-color', color);
             }
         } catch (err) {
-            log.warn('No se pudo determinar el color de encabezado de la página activa.', err);
+            log.warn('No se pudo determinar el color de encabezado de la pÃ¡gina activa.', err);
             if (mainWindow && !mainWindow.isDestroyed()) {
                 mainWindow.webContents.send('navbar-theme-color', '#387c92');
             }
@@ -328,7 +335,7 @@ async function createWindow() {
     mainView.webContents.on('will-navigate', (event, url) => {
         if (!isAllowedUrl(url)) {
             event.preventDefault();
-            log.warn(`Navegación bloqueada: ${url}`);
+            log.warn(`NavegaciÃ³n bloqueada: ${url}`);
         }
     });
 
@@ -355,6 +362,44 @@ async function createWindow() {
     ipcMain.removeHandler('get-app-version');
     ipcMain.handle('get-app-version', () => {
         return app.getVersion();
+    });
+
+    ipcMain.removeHandler('check-for-updates');
+    ipcMain.handle('check-for-updates', async () => {
+        if (!app.isPackaged) {
+            return {
+                status: 'disabled',
+                message: 'La revisiÃ³n de actualizaciones solo funciona en la app instalada.'
+            };
+        }
+
+        if (manualUpdateCheckInProgress) {
+            return {
+                status: 'checking',
+                message: 'Ya se estÃ¡n buscando actualizaciones.'
+            };
+        }
+
+        manualUpdateCheckInProgress = true;
+        sendUpdateStatus({
+            status: 'checking',
+            message: 'Buscando actualizaciones...'
+        });
+
+        try {
+            await autoUpdater.checkForUpdates();
+            return {
+                status: 'checking',
+                message: 'RevisiÃ³n de actualizaciones iniciada.'
+            };
+        } catch (err) {
+            manualUpdateCheckInProgress = false;
+            log.error(`Error buscando actualizaciones manualmente: ${err == null ? 'unknown' : err.message}`);
+            return {
+                status: 'error',
+                message: 'No se pudieron buscar actualizaciones.'
+            };
+        }
     });
 
     ipcMain.removeAllListeners('open-ti-support');
@@ -415,11 +460,11 @@ app.whenReady().then(async () => {
     await createWindow();
 
     if (app.isPackaged) {
-        log.info('Aplicación empaquetada. Verificando updates...');
+        log.info('AplicaciÃ³n empaquetada. Verificando updates...');
         autoUpdater.checkForUpdates();
 
         setInterval(() => {
-            log.info('Verificación automática de updates...');
+            log.info('VerificaciÃ³n automÃ¡tica de updates...');
             autoUpdater.checkForUpdates();
         }, 1000 * 60 * 30);
     } else {
@@ -435,7 +480,7 @@ app.on('web-contents-created', (_event, contents) => {
     contents.on('will-navigate', (event, url) => {
         if (!isAllowedUrl(url)) {
             event.preventDefault();
-            log.warn(`[web-contents-created] Navegación bloqueada: ${url}`);
+            log.warn(`[web-contents-created] NavegaciÃ³n bloqueada: ${url}`);
         }
     });
 
@@ -455,10 +500,19 @@ autoUpdater.on('checking-for-update', () => {
 
 autoUpdater.on('update-available', (info) => {
     log.info(`Actualización disponible: v${info.version}`);
+    sendUpdateStatus({
+        status: 'available',
+        message: `Actualización ${info.version} encontrada. Descargando...`
+    });
 });
 
 autoUpdater.on('update-not-available', () => {
     log.info('La aplicación está actualizada.');
+    manualUpdateCheckInProgress = false;
+    sendUpdateStatus({
+        status: 'current',
+        message: 'Ya tienes la versión más reciente.'
+    });
 });
 
 autoUpdater.on('download-progress', (progress) => {
@@ -467,16 +521,30 @@ autoUpdater.on('download-progress', (progress) => {
     if (mainWindow) {
         mainWindow.setProgressBar(progress.percent / 100);
     }
+    sendUpdateStatus({
+        status: 'downloading',
+        message: `Descargando actualización: ${percent}%`
+    });
 });
 
 autoUpdater.on('update-downloaded', (info) => {
     log.info(`Actualización descargada: v${info.version}`);
+    manualUpdateCheckInProgress = false;
     if (mainWindow) {
         mainWindow.setProgressBar(-1);
     }
     log.info('La actualización se instalará automáticamente al cerrar la aplicación.');
+    sendUpdateStatus({
+        status: 'downloaded',
+        message: `Actualización ${info.version} lista. Se instalará al cerrar.`
+    });
 });
 
 autoUpdater.on('error', (err) => {
+    manualUpdateCheckInProgress = false;
     log.error(`Error en AutoUpdater: ${err == null ? 'unknown' : err.message}`);
+    sendUpdateStatus({
+        status: 'error',
+        message: 'No se pudieron buscar actualizaciones.'
+    });
 });

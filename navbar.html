@@ -154,10 +154,35 @@
             background: #7c9238;
         }
 
+        .update-btn {
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        .update-btn.checking {
+            cursor: progress;
+            opacity: 0.78;
+        }
+
         .reload-btn {
             padding: 0;
             font-size: 19px;
             line-height: 1;
+        }
+
+        .update-status {
+            max-width: 230px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--navbar-text-color);
+            font-size: 12px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.18s ease;
+        }
+
+        .update-status.visible {
+            opacity: 0.92;
         }
     </style>
 </head>
@@ -174,6 +199,10 @@
         <nav id="nav-strip" class="nav-strip" aria-label="Aplicaciones SEA"></nav>
 
         <div class="actions">
+            <span id="update-status" class="update-status" aria-live="polite"></span>
+            <button id="update-button" class="action-btn update-btn" type="button" title="Buscar actualizaciones">
+                Buscar actualización
+            </button>
             <button id="support-button" class="action-btn support-btn" type="button">
                 Soporte TI
             </button>
@@ -297,6 +326,42 @@
             window.api.openTiSupport();
         };
 
+        const showUpdateStatus = (status) => {
+            const updateStatus = document.getElementById('update-status');
+            const updateButton = document.getElementById('update-button');
+
+            if (!status || !status.message) return;
+
+            updateStatus.textContent = status.message;
+            updateStatus.classList.add('visible');
+            updateButton.classList.toggle('checking', status.status === 'checking');
+            updateButton.disabled = status.status === 'checking';
+
+            if (!['checking', 'downloading'].includes(status.status)) {
+                setTimeout(() => {
+                    updateStatus.classList.remove('visible');
+                }, 5000);
+            }
+        };
+
+        const checkForUpdates = async () => {
+            const updateButton = document.getElementById('update-button');
+            updateButton.disabled = true;
+            updateButton.classList.add('checking');
+            showUpdateStatus({
+                status: 'checking',
+                message: 'Buscando actualizaciones...'
+            });
+
+            const status = await window.api.checkForUpdates();
+            showUpdateStatus(status);
+
+            if (status.status !== 'checking') {
+                updateButton.disabled = false;
+                updateButton.classList.remove('checking');
+            }
+        };
+
         const renderNavigation = () => {
             navStrip.innerHTML = '';
 
@@ -314,6 +379,7 @@
 
         renderNavigation();
 
+        document.getElementById('update-button').addEventListener('click', checkForUpdates);
         document.getElementById('support-button').addEventListener('click', openTiSupport);
         document.getElementById('reload-button').addEventListener('click', reloadView);
 
@@ -332,6 +398,15 @@
             if (!version) return;
             document.title = `Recursos Digitales SEA v${version}`;
             document.getElementById('version-badge').textContent = `v${version}`;
+        });
+
+        window.api.onUpdateStatus(status => {
+            showUpdateStatus(status);
+            if (status && status.status !== 'checking') {
+                const updateButton = document.getElementById('update-button');
+                updateButton.disabled = false;
+                updateButton.classList.remove('checking');
+            }
         });
     </script>
 </body>
