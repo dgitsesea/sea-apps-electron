@@ -47,8 +47,41 @@ let mainWindow;
 let mainView;
 let supportWindow = null;
 let manualUpdateCheckInProgress = false;
-let navbarHeight = 50;
 let updateReadyToInstall = false;
+let currentUrl = DEFAULT_URL;
+
+const APP_MENU_GROUPS = {
+    recursos: [
+        {
+            label: 'SEA Guanajuato',
+            url: 'https://sistemaestatalanticorrupcion.guanajuato.gob.mx/'
+        },
+        {
+            label: 'SESEA Guanajuato',
+            url: 'https://seseaguanajuato.org/'
+        },
+        {
+            label: 'Portal Público',
+            url: 'https://publico.seseaguanajuato.org/'
+        }
+    ],
+    sistemas: [
+        {
+            label: 'Plataforma Digital',
+            url: 'https://plataformadigital.guanajuato.gob.mx/'
+        },
+        {
+            label: 'Intranet SESEA',
+            url: 'https://intranet.seseaguanajuato.org/'
+        }
+    ],
+    soporte: [
+        {
+            label: 'Mesa de Ayuda SEA',
+            url: 'https://sistemaestatalanticorrupcion.guanajuato.gob.mx/mesa-de-ayuda/'
+        }
+    ]
+};
 
 const getConfigPath = () => path.join(app.getPath('userData'), 'last-url.json');
 
@@ -94,6 +127,8 @@ const loadAllowedUrl = (url) => {
         return false;
     }
 
+    currentUrl = url;
+    sendNavigationState(url);
     mainView.webContents.loadURL(url);
     return true;
 };
@@ -133,6 +168,12 @@ const writeSavedConfig = (config) => {
 const sendUpdateStatus = (status) => {
     if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('update-status', status);
+    }
+};
+
+const sendNavigationState = (url) => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('navigation-state', { url });
     }
 };
 
@@ -213,9 +254,9 @@ async function createWindow() {
         const bounds = mainWindow.getContentBounds();
         mainView.setBounds({
             x: 0,
-            y: navbarHeight,
+            y: 50,
             width: bounds.width,
-            height: Math.max(0, bounds.height - navbarHeight)
+            height: Math.max(0, bounds.height - 50)
         });
     };
 
@@ -229,6 +270,7 @@ async function createWindow() {
     let config = readSavedConfig(getSafeAppUrl(DEFAULT_URL));
     let urlToLoad = config.lastUrl;
     let shouldClearTemp = false;
+    currentUrl = urlToLoad;
 
     if (config.lastVersion && config.lastVersion !== app.getVersion()) {
         shouldClearTemp = true;
@@ -248,6 +290,8 @@ async function createWindow() {
             return;
         }
 
+        currentUrl = url;
+        sendNavigationState(url);
         config.lastUrl = url;
         config.lastVersion = app.getVersion();
         writeSavedConfig(config);
@@ -351,37 +395,7 @@ async function createWindow() {
         return { action: 'deny' };
     });
 
-    ipcMain.removeAllListeners('navigate');
-    ipcMain.on('navigate', (_event, url) => {
-        loadAllowedUrl(url);
-    });
-
-    ipcMain.removeAllListeners('reload');
-    ipcMain.on('reload', () => {
-        mainView.webContents.reload();
-    });
-
-    ipcMain.removeAllListeners('set-navbar-height');
-    ipcMain.on('set-navbar-height', (_event, height) => {
-        const nextHeight = Number(height);
-        if (!Number.isFinite(nextHeight)) return;
-
-        navbarHeight = Math.max(50, Math.min(320, nextHeight));
-        resizeView();
-    });
-
-    ipcMain.removeHandler('get-last-url');
-    ipcMain.handle('get-last-url', () => {
-        return readSavedConfig(getSafeAppUrl(DEFAULT_URL)).lastUrl;
-    });
-
-    ipcMain.removeHandler('get-app-version');
-    ipcMain.handle('get-app-version', () => {
-        return app.getVersion();
-    });
-
-    ipcMain.removeHandler('check-for-updates');
-    ipcMain.handle('check-for-updates', async () => {
+    const checkForUpdatesManually = async () => {
         if (updateReadyToInstall) {
             return {
                 status: 'downloaded',
@@ -393,14 +407,14 @@ async function createWindow() {
         if (!app.isPackaged) {
             return {
                 status: 'disabled',
-                message: 'La revisiÃ³n de actualizaciones solo funciona en la app instalada.'
+                message: 'La revisión de actualizaciones solo funciona en la app instalada.'
             };
         }
 
         if (manualUpdateCheckInProgress) {
             return {
                 status: 'checking',
-                message: 'Ya se estÃ¡n buscando actualizaciones.'
+                message: 'Ya se están buscando actualizaciones.'
             };
         }
 
@@ -414,7 +428,7 @@ async function createWindow() {
             await autoUpdater.checkForUpdates();
             return {
                 status: 'checking',
-                message: 'RevisiÃ³n de actualizaciones iniciada.'
+                message: 'Revisión de actualizaciones iniciada.'
             };
         } catch (err) {
             manualUpdateCheckInProgress = false;
@@ -424,27 +438,9 @@ async function createWindow() {
                 message: 'No se pudieron buscar actualizaciones.'
             };
         }
-    });
+    };
 
-    ipcMain.removeHandler('restart-and-update');
-    ipcMain.handle('restart-and-update', () => {
-        if (!updateReadyToInstall) {
-            return {
-                status: 'idle',
-                message: 'No hay una actualización lista para instalar.'
-            };
-        }
-
-        log.info('Reiniciando para instalar actualización...');
-        autoUpdater.quitAndInstall(false, true);
-        return {
-            status: 'restarting',
-            message: 'Reiniciando para actualizar...'
-        };
-    });
-
-    ipcMain.removeAllListeners('open-ti-support');
-    ipcMain.on('open-ti-support', () => {
+    const openSupportWindow = () => {
         if (supportWindow) {
             supportWindow.focus();
             return;
@@ -477,6 +473,108 @@ async function createWindow() {
         supportWindow.on('closed', () => {
             supportWindow = null;
         });
+    };
+
+    const buildNavigationMenuItems = (items) => items.map((item) => ({
+        label: item.label,
+        type: 'checkbox',
+        checked: currentUrl.startsWith(item.url),
+        click: () => {
+            currentUrl = item.url;
+            loadAllowedUrl(item.url);
+        }
+    }));
+
+    const openAppMenu = (groupId, point = {}) => {
+        const menuTemplates = {
+            recursos: buildNavigationMenuItems(APP_MENU_GROUPS.recursos),
+            sistemas: buildNavigationMenuItems(APP_MENU_GROUPS.sistemas),
+            soporte: [
+                ...buildNavigationMenuItems(APP_MENU_GROUPS.soporte),
+                { type: 'separator' },
+                {
+                    label: 'Abrir Soporte TI',
+                    click: openSupportWindow
+                }
+            ],
+            actualizacion: [
+                {
+                    label: 'Buscar actualización',
+                    click: () => {
+                        checkForUpdatesManually().then(sendUpdateStatus);
+                    }
+                },
+                {
+                    label: 'Reiniciar y actualizar',
+                    enabled: updateReadyToInstall,
+                    click: () => {
+                        log.info('Reiniciando para instalar actualización...');
+                        autoUpdater.quitAndInstall(false, true);
+                    }
+                }
+            ]
+        };
+
+        const template = menuTemplates[groupId];
+        if (!template) return;
+
+        Menu.buildFromTemplate(template).popup({
+            window: mainWindow,
+            x: Math.max(0, Math.round(Number(point.x) || 0)),
+            y: 50
+        });
+    };
+
+    ipcMain.removeAllListeners('navigate');
+    ipcMain.on('navigate', (_event, url) => {
+        loadAllowedUrl(url);
+    });
+
+    ipcMain.removeAllListeners('reload');
+    ipcMain.on('reload', () => {
+        mainView.webContents.reload();
+    });
+
+    ipcMain.removeHandler('get-last-url');
+    ipcMain.handle('get-last-url', () => {
+        return readSavedConfig(getSafeAppUrl(DEFAULT_URL)).lastUrl;
+    });
+
+    ipcMain.removeHandler('get-app-version');
+    ipcMain.handle('get-app-version', () => {
+        return app.getVersion();
+    });
+
+    ipcMain.removeHandler('check-for-updates');
+    ipcMain.handle('check-for-updates', async () => {
+        return checkForUpdatesManually();
+    });
+
+    ipcMain.removeHandler('restart-and-update');
+    ipcMain.handle('restart-and-update', () => {
+        if (!updateReadyToInstall) {
+            return {
+                status: 'idle',
+                message: 'No hay una actualización lista para instalar.'
+            };
+        }
+
+        log.info('Reiniciando para instalar actualización...');
+        autoUpdater.quitAndInstall(false, true);
+        return {
+            status: 'restarting',
+            message: 'Reiniciando para actualizar...'
+        };
+    });
+
+    ipcMain.removeAllListeners('open-app-menu');
+    ipcMain.on('open-app-menu', (_event, groupId, point) => {
+        openAppMenu(groupId, point);
+    });
+
+    ipcMain.removeAllListeners('open-ti-support');
+    ipcMain.on('open-ti-support', () => {
+        openSupportWindow();
     });
 
     ipcMain.removeAllListeners('close-support');

@@ -3,7 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('api', {
     navigate: (url) => ipcRenderer.send('navigate', url),
     reload: () => ipcRenderer.send('reload'),
-    setNavbarHeight: (height) => ipcRenderer.send('set-navbar-height', height),
+    openAppMenu: (groupId, point) => ipcRenderer.send('open-app-menu', groupId, point),
     getLastUrl: () => ipcRenderer.invoke('get-last-url'),
     getAppVersion: () => ipcRenderer.invoke('get-app-version'),
     checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
@@ -14,6 +14,11 @@ contextBridge.exposeInMainWorld('api', {
     onUpdateStatus: (callback) => {
         ipcRenderer.on('update-status', (_event, status) => {
             callback(status);
+        });
+    },
+    onNavigationState: (callback) => {
+        ipcRenderer.on('navigation-state', (_event, state) => {
+            callback(state);
         });
     },
     onNavbarThemeColor: (callback) => {

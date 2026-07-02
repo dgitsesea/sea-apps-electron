@@ -13,9 +13,6 @@
             --topbar-muted: #8a8a8a;
             --topbar-hover: #2a2d2e;
             --topbar-active: #37373d;
-            --menu-bg: #252526;
-            --menu-border: #3c3c3c;
-            --menu-shadow: rgba(0, 0, 0, 0.45);
         }
 
         * {
@@ -36,11 +33,6 @@
             background: var(--topbar-bg);
             color: var(--topbar-text);
             font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            transition: height 0.12s ease;
-        }
-
-        body.menu-open {
-            height: 260px;
         }
 
         .drag-region {
@@ -91,13 +83,12 @@
             max-width: 175px;
             overflow: hidden;
             text-overflow: ellipsis;
+            color: #f2f2f2;
             font-size: 13px;
             font-weight: 600;
-            color: #f2f2f2;
         }
 
         .version-pill {
-            flex: 0 0 auto;
             color: var(--topbar-muted);
             font-size: 11px;
             font-weight: 600;
@@ -130,10 +121,14 @@
         }
 
         .menu-trigger:hover,
-        .menu-trigger.open,
+        .menu-trigger.active,
         .icon-button:hover {
             background: var(--topbar-hover);
             color: #ffffff;
+        }
+
+        .menu-trigger.active {
+            background: var(--topbar-active);
         }
 
         .command-pill {
@@ -189,21 +184,18 @@
             font-size: 16px;
         }
 
-        .support-button {
+        .support-button,
+        .restart-update-button {
             width: auto;
-            padding: 0 9px;
+            padding: 0 10px;
             font-size: 12px;
             font-weight: 700;
         }
 
         .restart-update-button {
             display: none;
-            width: auto;
-            padding: 0 10px;
             background: #0e639c;
             color: #ffffff;
-            font-size: 12px;
-            font-weight: 700;
         }
 
         .restart-update-button.visible {
@@ -214,95 +206,17 @@
             background: #1177bb;
         }
 
-        .dropdown-layer {
-            position: fixed;
-            inset: 0;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        .dropdown-menu {
-            position: absolute;
-            top: 44px;
-            min-width: 230px;
-            padding: 5px;
-            border: 1px solid var(--menu-border);
-            border-radius: 6px;
-            background: var(--menu-bg);
-            box-shadow: 0 12px 30px var(--menu-shadow);
-            pointer-events: auto;
-        }
-
-        .dropdown-menu[hidden] {
-            display: none;
-        }
-
-        .menu-item {
-            display: grid;
-            grid-template-columns: 18px minmax(0, 1fr);
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-            min-height: 30px;
-            padding: 5px 9px;
-            border-radius: 4px;
-            background: transparent;
-            color: var(--topbar-text);
-            text-align: left;
-            font-size: 13px;
-        }
-
-        .menu-item:hover,
-        .menu-item:focus {
-            outline: 0;
-            background: #04395e;
-            color: #ffffff;
-        }
-
-        .menu-item.active {
-            background: var(--topbar-active);
-            color: #ffffff;
-        }
-
-        .menu-item-check {
-            color: #89d185;
-            font-weight: 800;
-        }
-
-        .menu-separator {
-            height: 1px;
-            margin: 5px 6px;
-            background: var(--menu-border);
-        }
-
         @media (max-width: 900px) {
             .topbar {
                 grid-template-columns: auto auto minmax(120px, 1fr) auto;
                 gap: 6px;
             }
 
-            .brand-name {
-                display: none;
-            }
-
-            .version-pill {
-                display: none;
-            }
-
-            .menu-trigger {
-                padding: 0 7px;
-            }
-
-            .update-status {
-                display: none;
-            }
-
+            .brand-name,
+            .version-pill,
+            .update-status,
             .support-button {
                 display: none;
-            }
-
-            .restart-update-button.visible {
-                display: grid;
             }
         }
     </style>
@@ -321,7 +235,7 @@
         <nav id="menu-bar" class="menu-bar" aria-label="Menú principal"></nav>
 
         <div class="command-pill" title="Página actual">
-            <span id="active-page-label" class="command-label">Plataforma Digital</span>
+            <span id="active-page-label" class="command-label">Página actual</span>
         </div>
 
         <div class="actions">
@@ -334,86 +248,64 @@
         </div>
     </div>
 
-    <div id="dropdown-layer" class="dropdown-layer">
-        <div id="dropdown-menu" class="dropdown-menu" hidden></div>
-    </div>
-
     <script>
         const MENU_GROUPS = [
             {
+                id: 'recursos',
                 label: 'Recursos',
                 items: [
                     {
-                        type: 'navigate',
                         label: 'SEA Guanajuato',
                         url: 'https://sistemaestatalanticorrupcion.guanajuato.gob.mx/'
                     },
                     {
-                        type: 'navigate',
                         label: 'SESEA Guanajuato',
                         url: 'https://seseaguanajuato.org/'
                     },
                     {
-                        type: 'navigate',
                         label: 'Portal Público',
                         url: 'https://publico.seseaguanajuato.org/'
                     }
                 ]
             },
             {
+                id: 'sistemas',
                 label: 'Sistemas',
                 items: [
                     {
-                        type: 'navigate',
                         label: 'Plataforma Digital',
                         url: 'https://plataformadigital.guanajuato.gob.mx/'
                     },
                     {
-                        type: 'navigate',
                         label: 'Intranet SESEA',
                         url: 'https://intranet.seseaguanajuato.org/'
                     }
                 ]
             },
             {
+                id: 'soporte',
                 label: 'Soporte',
                 items: [
                     {
-                        type: 'navigate',
                         label: 'Mesa de Ayuda SEA',
                         url: 'https://sistemaestatalanticorrupcion.guanajuato.gob.mx/mesa-de-ayuda/'
-                    },
-                    {
-                        type: 'separator'
-                    },
-                    {
-                        type: 'action',
-                        label: 'Abrir Soporte TI',
-                        action: 'open-support'
                     }
                 ]
             },
             {
+                id: 'actualizacion',
                 label: 'Actualización',
-                items: [
-                    {
-                        type: 'action',
-                        label: 'Buscar actualización',
-                        action: 'check-updates'
-                    }
-                ]
+                items: []
             }
         ];
 
         const menuBar = document.getElementById('menu-bar');
-        const dropdownMenu = document.getElementById('dropdown-menu');
         const activePageLabel = document.getElementById('active-page-label');
         let activeUrl = '';
-        let openMenuIndex = null;
 
         const allNavigationItems = () => MENU_GROUPS
             .flatMap(group => group.items)
-            .filter(item => item.type === 'navigate');
+            .filter(item => item.url);
 
         const findBestNavItem = (url) => {
             let bestMatch = null;
@@ -429,15 +321,26 @@
             return bestMatch;
         };
 
-        const closeMenu = () => {
-            openMenuIndex = null;
-            dropdownMenu.hidden = true;
-            dropdownMenu.innerHTML = '';
-            document.body.classList.remove('menu-open');
-            window.api.setNavbarHeight(50);
+        const setActiveMenuGroup = (activeItem) => {
             document.querySelectorAll('.menu-trigger').forEach(button => {
-                button.classList.remove('open');
-                button.setAttribute('aria-expanded', 'false');
+                const group = MENU_GROUPS.find(item => item.id === button.dataset.groupId);
+                const isActive = activeItem && group && group.items.includes(activeItem);
+                button.classList.toggle('active', Boolean(isActive));
+            });
+        };
+
+        const setActiveByUrl = (url) => {
+            activeUrl = url || '';
+            const activeItem = findBestNavItem(activeUrl);
+            activePageLabel.textContent = activeItem ? activeItem.label : 'Página actual';
+            setActiveMenuGroup(activeItem);
+        };
+
+        const openNativeMenu = (groupId, triggerButton) => {
+            const bounds = triggerButton.getBoundingClientRect();
+            window.api.openAppMenu(groupId, {
+                x: bounds.left,
+                y: bounds.bottom
             });
         };
 
@@ -458,118 +361,23 @@
             }
         };
 
-        const checkForUpdates = async () => {
-            showUpdateStatus({
-                status: 'checking',
-                message: 'Buscando actualizaciones...'
-            });
-
-            const status = await window.api.checkForUpdates();
-            showUpdateStatus(status);
-        };
-
         const restartAndUpdate = async () => {
             const status = await window.api.restartAndUpdate();
             showUpdateStatus(status);
         };
 
-        const runAction = (action) => {
-            if (action === 'open-support') {
-                window.api.openTiSupport();
-                return;
-            }
-
-            if (action === 'check-updates') {
-                checkForUpdates();
-            }
-        };
-
-        const navigate = (item) => {
-            activeUrl = item.url;
-            activePageLabel.textContent = item.label;
-            window.api.navigate(item.url);
-        };
-
-        const renderDropdown = (groupIndex, triggerButton) => {
-            const group = MENU_GROUPS[groupIndex];
-            dropdownMenu.innerHTML = '';
-
-            group.items.forEach(item => {
-                if (item.type === 'separator') {
-                    const separator = document.createElement('div');
-                    separator.className = 'menu-separator';
-                    dropdownMenu.appendChild(separator);
-                    return;
-                }
-
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'menu-item';
-
-                const isActive = item.type === 'navigate'
-                    && findBestNavItem(activeUrl) === item;
-                if (isActive) button.classList.add('active');
-
-                const check = document.createElement('span');
-                check.className = 'menu-item-check';
-                check.textContent = isActive ? '✓' : '';
-
-                const label = document.createElement('span');
-                label.textContent = item.label;
-
-                button.append(check, label);
-                button.addEventListener('click', () => {
-                    closeMenu();
-                    if (item.type === 'navigate') {
-                        navigate(item);
-                    } else {
-                        runAction(item.action);
-                    }
-                });
-
-                dropdownMenu.appendChild(button);
-            });
-
-            const bounds = triggerButton.getBoundingClientRect();
-            dropdownMenu.style.left = `${Math.max(8, Math.min(bounds.left, window.innerWidth - 250))}px`;
-            dropdownMenu.hidden = false;
-            document.body.classList.add('menu-open');
-            window.api.setNavbarHeight(260);
-            openMenuIndex = groupIndex;
-            triggerButton.classList.add('open');
-            triggerButton.setAttribute('aria-expanded', 'true');
-        };
-
-        const toggleMenu = (groupIndex, triggerButton) => {
-            const isSameMenu = openMenuIndex === groupIndex;
-            closeMenu();
-            if (!isSameMenu) {
-                renderDropdown(groupIndex, triggerButton);
-            }
-        };
-
         const renderMenuBar = () => {
             menuBar.innerHTML = '';
 
-            MENU_GROUPS.forEach((group, groupIndex) => {
+            MENU_GROUPS.forEach(group => {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'menu-trigger';
                 button.textContent = group.label;
-                button.setAttribute('aria-haspopup', 'menu');
-                button.setAttribute('aria-expanded', 'false');
-                button.addEventListener('click', event => {
-                    event.stopPropagation();
-                    toggleMenu(groupIndex, button);
-                });
+                button.dataset.groupId = group.id;
+                button.addEventListener('click', () => openNativeMenu(group.id, button));
                 menuBar.appendChild(button);
             });
-        };
-
-        const setActiveByUrl = (url) => {
-            activeUrl = url || '';
-            const activeItem = findBestNavItem(activeUrl);
-            activePageLabel.textContent = activeItem ? activeItem.label : 'Página actual';
         };
 
         renderMenuBar();
@@ -577,24 +385,18 @@
         document.getElementById('support-button').addEventListener('click', () => {
             window.api.openTiSupport();
         });
+
         document.getElementById('restart-update-button').addEventListener('click', restartAndUpdate);
+
         document.getElementById('reload-button').addEventListener('click', () => {
             window.api.reload();
         });
 
-        document.addEventListener('click', event => {
-            if (!dropdownMenu.hidden && !dropdownMenu.contains(event.target)) {
-                closeMenu();
-            }
-        });
-
-        document.addEventListener('keydown', event => {
-            if (event.key === 'Escape') {
-                closeMenu();
-            }
-        });
-
         window.api.getLastUrl().then(setActiveByUrl);
+
+        window.api.onNavigationState(state => {
+            setActiveByUrl(state && state.url);
+        });
 
         window.api.getAppVersion().then(version => {
             if (!version) return;
