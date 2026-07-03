@@ -27,7 +27,7 @@ const APP_USER_MODEL_ID = 'com.sea.dgitsuite';
 const DEFAULT_URL = process.env.PAGINA_ABRIR || 'https://login.seseaguanajuato.org';
 const DEFAULT_UPDATE_CHECK_INTERVAL_MINUTES = 30;
 const MIN_UPDATE_CHECK_INTERVAL_MINUTES = 1;
-
+ 
 if (process.platform === 'win32') {
     app.setAppUserModelId(APP_USER_MODEL_ID);
 }
