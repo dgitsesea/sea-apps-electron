@@ -1,6 +1,6 @@
 {
   "name": "sistema_de_aplicaciones_sesea",
-  "version": "6.0.2",
+  "version": "6.0.3",
   "description": "Recursos Digitales SEA",
   "repository": {
     "type": "git",
@@ -40,6 +40,9 @@
     },
     "nsis": {
       "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "packElevateHelper": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
