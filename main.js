@@ -59,7 +59,7 @@ let manualUpdateCheckInProgress = false;
 let automaticUpdateCheckInProgress = false;
 let updateReadyToInstall = false;
 let updateInstallInProgress = false;
-let lastNativeUpdateNotificationVersion = null;
+let lastNativeUpdateNotificationKey = null;
 let currentUrl = DEFAULT_URL;
 
 const APP_MENU_GROUPS = {
@@ -229,23 +229,50 @@ const showNativeNotification = ({ title, body }) => {
         return;
     }
 
-    const icon = getNotificationIconPath();
-    const notification = new Notification({
-        title,
-        body,
-        silent: false,
-        ...(icon ? { icon } : {})
-    });
+    try {
+        const icon = getNotificationIconPath();
+        const notification = new Notification({
+            title,
+            body,
+            silent: false,
+            timeoutType: 'default',
+            ...(icon ? { icon } : {})
+        });
 
-    notification.on('click', focusMainWindow);
-    notification.show();
+        notification.on('show', () => {
+            log.info(`Notificación nativa mostrada: ${title}`);
+        });
+        notification.on('click', focusMainWindow);
+        notification.on('failed', (_event, error) => {
+            log.warn(`No se pudo mostrar la notificación nativa: ${error || title}`);
+        });
+        notification.show();
+    } catch (err) {
+        log.warn(`Error preparando notificación nativa: ${err == null ? 'unknown' : err.message}`);
+    }
+};
+
+const showUpdateAvailableNotification = (info) => {
+    const version = info && info.version ? info.version : 'disponible';
+    const notificationKey = `available:${version}`;
+
+    if (lastNativeUpdateNotificationKey === notificationKey) return;
+    lastNativeUpdateNotificationKey = notificationKey;
+
+    showNativeNotification({
+        title: 'Actualización disponible',
+        body: info && info.version
+            ? `Se encontró Recursos Digitales SEA v${info.version}. Se descargará en segundo plano.`
+            : 'Se encontró una actualización de Recursos Digitales SEA. Se descargará en segundo plano.'
+    });
 };
 
 const showUpdateReadyNotification = (info) => {
     const version = info && info.version ? info.version : 'disponible';
+    const notificationKey = `downloaded:${version}`;
 
-    if (lastNativeUpdateNotificationVersion === version) return;
-    lastNativeUpdateNotificationVersion = version;
+    if (lastNativeUpdateNotificationKey === notificationKey) return;
+    lastNativeUpdateNotificationKey = notificationKey;
 
     showNativeNotification({
         title: 'Actualización lista',
@@ -763,6 +790,7 @@ autoUpdater.on('update-available', (info) => {
     updateReadyToInstall = false;
     updateInstallInProgress = false;
     log.info(`Actualización disponible: v${info.version}`);
+    showUpdateAvailableNotification(info);
     sendUpdateStatus({
         status: 'available',
         message: `Actualización ${info.version} encontrada. Descargando...`,
